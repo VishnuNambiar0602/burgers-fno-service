@@ -1,0 +1,9 @@
+validation sample ids used: [17, 49, 50]
+
+== Phase A: convention search, 256 cells (stride-4 point values), 3 samples
+a=1 nu_eff=0.01     traj relL2 per sample [0.164  0.0659 0.1335] | mean at t=0.5/1/2: 0.1379 0.1177 0.0971 | 1s
+a=1 nu_eff=0.01/pi  traj relL2 per sample [0.0026 0.0022 0.0024] | mean at t=0.5/1/2: 0.0031 0.0015 0.0007 | 0s
+a=2 nu_eff=0.01     traj relL2 per sample [0.634  0.1573 0.3907] | mean at t=0.5/1/2: 0.4609 0.3481 0.2531 | 1s
+a=2 nu_eff=0.01/pi  traj relL2 per sample [0.6759 0.1733 0.4166] | mean at t=0.5/1/2: 0.4949 0.3791 0.2708 | 0s
+
+== Phase B is run by the caller with the chosen convention (see argv)

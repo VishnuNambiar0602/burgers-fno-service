@@ -58,3 +58,17 @@ def test_read_samples_order_and_stride(tmp_path):
         f["tensor"] = data
     got = read_samples(str(p), [5, 1, 3], x_stride=2, t_stride=2, chunk=2)
     assert np.array_equal(got, data[[5, 1, 3]][:, ::2, ::2])
+
+
+def test_saved_split_file_matches_seed_and_has_no_overlap():
+    from src.data import load_split
+    p = os.path.join(os.path.dirname(__file__), "..", "splits", "burgers_nu0.01_seed0.json")
+    s = load_split(p)
+    fresh = make_split(s["n_total"], s["seed"], len(s["test"]), len(s["val"]))
+    assert s["test"] == fresh["test"] and s["val"] == fresh["val"] and s["train_order"] == fresh["train_order"]
+    used = s["train_order"][:s["n_train_used"]]
+    sets = [set(s["test"]), set(s["val"]), set(used)]
+    assert len(sets[0]) == 1000 and len(sets[1]) == 500 and len(sets[2]) == s["n_train_used"]
+    assert not (sets[0] & sets[1]) and not (sets[0] & sets[2]) and not (sets[1] & sets[2])
+    assert len(set(s["train_order"])) == len(s["train_order"]) == s["n_total"] - 1500
+    assert sorted(set(s["test"]) | set(s["val"]) | set(s["train_order"])) == list(range(s["n_total"]))
