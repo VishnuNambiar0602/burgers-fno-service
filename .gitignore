@@ -1,0 +1,44 @@
+# Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+secrets*
+*token*
+
+# Raw / processed data (never commit)
+data/
+*.hdf5
+*.h5
+*.npy
+*.npz
+
+# Large checkpoints (small deployable weights go in model/ and are added deliberately)
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+!model/*.pt
+
+# Logs and scratch
+logs/
+*.log
+tmp/
+scratch/
+
+# Claude Code local state
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
