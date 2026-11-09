@@ -27,5 +27,5 @@ $PY -m pip install --no-cache-dir --default-timeout 120 --retries 10 "$WHEEL" --
 # everything else from PyPI (versions are pinned afterwards in requirements.lock.txt)
 $PY -m pip install --no-cache-dir --default-timeout 120 --retries 10 numpy h5py scipy matplotlib fastapi uvicorn pydantic pytest httpx
 
-$PY -m pip freeze > requirements.lock.txt
+$PY -m pip freeze | sed -e "s#^torch @ file:.*#torch==2.14.1+cu126#" -e "1i --extra-index-url https://download.pytorch.org/whl/cu126" > requirements.lock.txt
 echo "--- lockfile written:"; wc -l requirements.lock.txt

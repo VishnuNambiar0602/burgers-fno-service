@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cu126
 annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.16.0
@@ -37,7 +38,7 @@ scipy==1.18.1
 setuptools==78.1.0
 starlette==1.10.0
 sympy==1.14.0
-torch @ file:///D:/Projects/Pre-doc/data/wheels/torch-2.14.1%2Bcu126-cp313-cp313-win_amd64.whl#sha256=92d0ae66f10ae9dfaaf85d684d6794a3d6ca4ed938dcfaa25e94c54cff3764eb
+torch==2.14.1+cu126
 typing-inspection==0.4.5
 typing_extensions==4.16.0
 tzdata==2026.6
