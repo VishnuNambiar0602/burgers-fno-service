@@ -1,0 +1,24 @@
+{
+ "base": "http://127.0.0.1:7861",
+ "time": "2026-11-10 00:02:10 +0530",
+ "row": 7,
+ "health": {
+  "status": "ok",
+  "model_loaded": true,
+  "uptime_s": 3.7
+ },
+ "served_sha256": "21e63e824e5dc2183ebf7d577190f3c011726cc3e24c07eaa7b36a9c7ee0d07f",
+ "local_sha256": "21e63e824e5dc2183ebf7d577190f3c011726cc3e24c07eaa7b36a9c7ee0d07f",
+ "predict_http_ms_first": 75.65599999725237,
+ "predict_http_ms_median_of_rest": 64.24049999986892,
+ "response_bytes": 463351,
+ "max_abs_diff_live_vs_offline": 7.770156860154032e-07,
+ "relL2_live_vs_offline": 9.929081814860347e-07,
+ "relL2_live_vs_truth": 0.011789513507884623,
+ "relL2_offline_vs_truth": 0.011789525707340522,
+ "ood": false,
+ "solver_http_ms": 881.3735000003362,
+ "solver_seconds_server": 0.7746845039999926,
+ "relL2_solver_vs_truth": 0.0038045945123659107,
+ "PASS": true
+}
