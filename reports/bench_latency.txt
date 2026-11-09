@@ -1,0 +1,7 @@
+fno_s1 cpu threads= 1 | import torch 1.54s load 0.010s | b1 p50 1.9 p95 2.1 ms | b8 p50 6.2 ms | b32 p50 22.1 ms | RSS after load 528 MB, peak 562 MB | process wall 6.2s
+fno_s1 cpu threads= 2 | import torch 1.55s load 0.009s | b1 p50 1.8 p95 2.1 ms | b8 p50 4.5 ms | b32 p50 13.5 ms | RSS after load 529 MB, peak 564 MB | process wall 4.8s
+fno_s1 cpu threads= 4 | import torch 1.52s load 0.010s | b1 p50 1.8 p95 2.3 ms | b8 p50 4.0 ms | b32 p50 10.2 ms | RSS after load 530 MB, peak 567 MB | process wall 4.3s
+fno_s1 cpu threads=14 | import torch 1.56s load 0.012s | b1 p50 3.0 p95 6.6 ms | b8 p50 10.5 ms | b32 p50 17.4 ms | RSS after load 535 MB, peak 580 MB | process wall 6.9s
+unet_s1 cpu threads= 2 | import torch 1.52s load 0.011s | b1 p50 1.7 p95 1.9 ms | b8 p50 8.1 ms | b32 p50 26.4 ms | RSS after load 530 MB, peak 588 MB | process wall 6.9s
+fno_s1 cuda threads=14 | import torch 1.49s load 0.189s | b1 p50 4.2 p95 5.4 ms | b8 p50 5.1 ms | b32 p50 2.0 ms | RSS after load 668 MB, peak 927 MB | process wall 5.4s
+numpy solver: {'numpy_solver_256cells_1sample_s': 0.38441420000162907, 'numpy_solver_256cells_batch8_s': 0.5216588999992382}

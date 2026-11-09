@@ -1,0 +1,23 @@
+A. whole-trajectory val relL2 fno_s1: evaluate.py 0.027654 | independent numpy float64 0.027654
+   sanity: pred=truth -> 0.0; pred=0 -> 1.000
+B. train.npy rows 0..4 equal raw HDF5 rows [3679, 4215, 6705]...: True
+B. val.npy rows 0..4 equal raw HDF5 rows [17, 49, 50]...: True
+B. test.npy rows 0..2 equal raw HDF5 rows [1, 27, 36]...: True
+C. fno_s1: wrong-IC control 1.924 (should be large) | 1% input noise changes output by 0.0024 | time offset d->relL2 {-2: 0.0842, -1: 0.0507, 0: 0.0275, 1: 0.051, 2: 0.0854} (min must be at 0)
+C. unet_s1: wrong-IC control 1.917 (should be large) | 1% input noise changes output by 0.0174 | time offset d->relL2 {-2: 0.1283, -1: 0.1083, 0: 0.0981, 1: 0.1088, 2: 0.1299} (min must be at 0)
+D. fno_s1: relL2 on periodically shifted val ICs (shift in grid cells): {0: 0.0275, 17: 0.0275, 64: 0.0275, 128: 0.0275}
+D. unet_s1: relL2 on periodically shifted val ICs (shift in grid cells): {0: 0.0981, 17: 0.0992, 64: 0.0981, 128: 0.0981}
+E. OOD (FNO | U-Net relL2 vs solver truth, whole trajectory; max|u0| of the input in brackets; train max|u0| <= 3.35)
+   val_IC x1 (control, solver truth)    FNO 0.0267 | U-Net 0.0982  [2.58]
+   amplitude x0.5                       FNO 0.0133 | U-Net 0.0732  [1.29]
+   amplitude x2                         FNO 0.1004 | U-Net 0.1673  [5.16]
+   amplitude x3                         FNO 0.1949 | U-Net 0.2479  [7.74]
+   mean offset +1.5                     FNO 0.0554 | U-Net 0.0964  [3.72]
+   mean offset +3.0                     FNO 0.0886 | U-Net 0.0980  [5.22]
+   gaussian bump                        FNO 0.0174 | U-Net 0.6795  [1.00]
+   square wave                          FNO 0.1097 | U-Net 0.4219  [1.00]
+   white noise sd 0.3                   FNO 0.7077 | U-Net 1.3038  [1.13]
+   sine k=40 (random phase)             FNO 1.5400 | U-Net 2.1312  [1.00]
+   sine k=100 (random phase)            FNO 1.5802 | U-Net 1.2162  [1.00]
+   constant 0.7                         FNO 0.0011 | U-Net 0.0091  [0.70]
+F. 512-point input vs stored truth (trained on 256): {'fno_s1': 0.027144230403527043, 'unet_s1': 0.5598737387560121}

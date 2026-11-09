@@ -9,7 +9,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 |---|---|---|---|---|---|
 | M0 Discovery, environment, plan | T+6 | 2026-11-09 21:03 | ~1.5 | 2026-11-09 18:52 (T+3h48m) | DONE |
 | M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | 2026-11-09 20:07 (T+5h03m) | DONE |
-| M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | | IN PROGRESS (training started 20:07) |
+| M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | 2026-11-09 21:13 (T+6h09m) | DONE (kept models; extra validation 23:06) |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | | not started |
 | M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | not started |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | | not started |
@@ -32,3 +32,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-09 20:07 IST: User approved gate (b) and the subset/split (train 4000 / val 500 / test 1000, x stride 4). M1 closed. Full training started: FNO then U-Net, seeds 0-2, 300 epochs each, scripts/train_all.sh, logs/train_*.log. Estimate ~1h50m.
 - 2026-11-09 21:12 IST: Six main runs finished (FNO s0-2: 300 epochs, ~7 min each; U-Net s0-2: ~13.5 min each); no failures. Val-set evaluation and 3-case solver spot check done (reports/eval_val_*.json, spotcheck.png). Models FROZEN here, checkpoints chosen by val; test evaluation run once next.
 - 2026-11-09 21:13 IST: Test evaluation run ONCE on frozen models (reports/eval_test_*.json). FNO whole-trajectory rel L2 0.0264-0.0271 (3 seeds), U-Net 0.0843-0.0941, copy-IC 1.158, IC-mean constant 0.456. Test-vs-train IC duplicate check run. M2 pending user review (physics checks done: mass drift + 3-case solver spot check).
+- 2026-11-09 23:06 IST: User confirmed keeping the models; M2 CLOSED (work finished 21:13, T+6h09m). Extra validation (scripts/validate_m2.py): independent metric check matches (0.027654), raw-row mapping exact, time alignment min at offset 0, FNO translation-invariant, OOD behaviour measured. Latency/memory benchmark (scripts/bench_latency.py). Published comparison searched: no reliable apples-to-apples numbers (reports/published_comparison.md).
