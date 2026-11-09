@@ -1,0 +1,34 @@
+{
+ "label": "unet seed 2 (best-val checkpoint)",
+ "model": "unet",
+ "ckpt": "checkpoints/unet_s2/best.pt",
+ "split": "val",
+ "n": 500,
+ "method": "relative L2 per sample, mean over samples; see module docstring",
+ "whole_mean": 0.10046181082725525,
+ "whole_median": 0.07719219475984573,
+ "whole_p95": 0.32211315631866455,
+ "per_k": {
+  "0": 0.042993608862161636,
+  "1": 0.030894791707396507,
+  "5": 0.04081399738788605,
+  "10": 0.04796493053436279,
+  "25": 0.05959125980734825,
+  "50": 0.08051855862140656,
+  "100": 0.10923036932945251,
+  "150": 0.12696868181228638,
+  "200": 0.15288834273815155
+ },
+ "mean_k1_200": 0.10371395200490952,
+ "shock_def": "du/dx < -20.0 (true field), near = within +-5 grid points",
+ "near_shock": {
+  "pooled_relL2": 0.24491164088249207,
+  "fraction_of_points": 0.022507034242153168
+ },
+ "away_from_shock": {
+  "pooled_relL2": 0.10846251994371414,
+  "fraction_of_points": 0.9725178480148315
+ },
+ "mass_drift_pred": 0.030546728521585464,
+ "mass_drift_true": 7.729999197181314e-05
+}

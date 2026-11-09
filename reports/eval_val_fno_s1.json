@@ -1,0 +1,34 @@
+{
+ "label": "fno seed 1 (best-val checkpoint)",
+ "model": "fno",
+ "ckpt": "checkpoints/fno_s1/best.pt",
+ "split": "val",
+ "n": 500,
+ "method": "relative L2 per sample, mean over samples; see module docstring",
+ "whole_mean": 0.02765374816954136,
+ "whole_median": 0.021595418453216553,
+ "whole_p95": 0.06605647504329681,
+ "per_k": {
+  "0": 0.015892747789621353,
+  "1": 0.014073490165174007,
+  "5": 0.018286434933543205,
+  "10": 0.022317294031381607,
+  "25": 0.0274119284003973,
+  "50": 0.027002034708857536,
+  "100": 0.027854256331920624,
+  "150": 0.02925611101090908,
+  "200": 0.040214281529188156
+ },
+ "mean_k1_200": 0.028272029012441635,
+ "shock_def": "du/dx < -20.0 (true field), near = within +-5 grid points",
+ "near_shock": {
+  "pooled_relL2": 0.14063194394111633,
+  "fraction_of_points": 0.022507034242153168
+ },
+ "away_from_shock": {
+  "pooled_relL2": 0.04821910336613655,
+  "fraction_of_points": 0.9725178480148315
+ },
+ "mass_drift_pred": 0.008079077117145061,
+ "mass_drift_true": 7.729999197181314e-05
+}
