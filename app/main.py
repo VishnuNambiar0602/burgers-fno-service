@@ -79,6 +79,12 @@ def _round(a):
     return np.round(np.asarray(a, dtype=np.float64), 6).tolist()
 
 
+@app.get("/")
+def root():
+    return {"service": "burgers-fno-service", "status": "skeleton (no front end yet)", "docs": "/docs",
+            "endpoints": ["GET /health", "GET /model-info", "POST /predict"]}
+
+
 @app.get("/health")
 def health():
     ok = app.state.model is not None

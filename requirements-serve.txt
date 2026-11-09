@@ -1,0 +1,8 @@
+# Serving-only requirements (CPU). Versions pinned to what was tested locally (see requirements.lock.txt).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+numpy==2.5.4
+fastapi==0.162.2
+starlette==1.10.0
+uvicorn==0.54.0
+pydantic==2.14.3
