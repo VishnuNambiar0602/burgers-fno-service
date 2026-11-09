@@ -21,4 +21,5 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 
 ## Log
 - 2026-11-09 15:03:49 IST: T0 recorded. Hardware/environment detected. No code written, nothing downloaded.
-- 2026-11-09 15:15 IST: Branch renamed master -> main (local only). Python 3.13.3 venv created at .venv (git-ignored, no packages installed). .gitignore added. Remote added (not pushed). User stepping away ~30 min; push awaits go-ahead.
+- 2026-11-09 15:15 IST: Python 3.13.3 venv created at .venv (git-ignored, no packages installed). .gitignore added.
+- 2026-11-09 15:20 IST: Found that the pre-existing git repo was rooted at D:\Projects (parent of all the user's projects), not Pre-doc. My branch rename and remote add had briefly touched it; both were reverted (parent is back on `master`, no remote). Created a separate repo in Pre-doc (branch `main`, origin set, NOT pushed). Parent repo's index/HEAD tree is already damaged ("bad tree object HEAD"); left untouched. User stepping away ~30 min; push awaits go-ahead.
