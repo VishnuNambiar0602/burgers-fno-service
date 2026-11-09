@@ -1,0 +1,34 @@
+{
+ "label": "",
+ "model": "const_icmean",
+ "ckpt": "",
+ "split": "val",
+ "n": 500,
+ "method": "relative L2 per sample, mean over samples; see module docstring",
+ "whole_mean": 0.4769816994667053,
+ "whole_median": 0.414392352104187,
+ "whole_p95": 0.9813590049743652,
+ "per_k": {
+  "0": 0.710204005241394,
+  "1": 0.7061430811882019,
+  "5": 0.6869929432868958,
+  "10": 0.6538906693458557,
+  "25": 0.5586721301078796,
+  "50": 0.4584527313709259,
+  "100": 0.34963083267211914,
+  "150": 0.2873183488845825,
+  "200": 0.24505335092544556
+ },
+ "mean_k1_200": 0.3861335515975952,
+ "shock_def": "du/dx < -20.0 (true field), near = within +-5 grid points",
+ "near_shock": {
+  "pooled_relL2": 0.6175525188446045,
+  "fraction_of_points": 0.022507034242153168
+ },
+ "away_from_shock": {
+  "pooled_relL2": 0.3115083575248718,
+  "fraction_of_points": 0.9725178480148315
+ },
+ "mass_drift_pred": 0.0,
+ "mass_drift_true": 7.729999197181314e-05
+}

@@ -1,0 +1,34 @@
+{
+ "label": "SMOKE checkpoint, not a trained model",
+ "model": "unet",
+ "ckpt": "checkpoints/smoke_unet/best.pt",
+ "split": "val",
+ "n": 500,
+ "method": "relative L2 per sample, mean over samples; see module docstring",
+ "whole_mean": 0.5743898749351501,
+ "whole_median": 0.5338058471679688,
+ "whole_p95": 0.9030857086181641,
+ "per_k": {
+  "0": 0.624911904335022,
+  "1": 0.5539523959159851,
+  "5": 0.562390923500061,
+  "10": 0.5114879012107849,
+  "25": 0.46376118063926697,
+  "50": 0.5203328728675842,
+  "100": 0.6069990396499634,
+  "150": 0.6689780354499817,
+  "200": 0.6914252638816833
+ },
+ "mean_k1_200": 0.598295271396637,
+ "shock_def": "du/dx < -20.0 (true field), near = within +-5 grid points",
+ "near_shock": {
+  "pooled_relL2": 0.6654849648475647,
+  "fraction_of_points": 0.022507034242153168
+ },
+ "away_from_shock": {
+  "pooled_relL2": 0.4929393529891968,
+  "fraction_of_points": 0.9725178480148315
+ },
+ "mass_drift_pred": 0.61948162317276,
+ "mass_drift_true": 7.729999197181314e-05
+}
