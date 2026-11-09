@@ -8,8 +8,8 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | Milestone | T+ deadline | Absolute deadline (IST) | Effective h (budget) | Actual completion | Status |
 |---|---|---|---|---|---|
 | M0 Discovery, environment, plan | T+6 | 2026-11-09 21:03 | ~1.5 | 2026-11-09 18:52 (T+3h48m) | DONE |
-| M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | | PROPOSAL READY, awaiting user approval |
-| M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | | not started |
+| M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | 2026-11-09 20:07 (T+5h03m) | DONE |
+| M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | | IN PROGRESS (training started 20:07) |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | | not started |
 | M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | not started |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | | not started |
@@ -29,3 +29,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-09 19:38 IST: Dataset downloaded (6 resumes), size 8232968312 and md5 e6d9a4f6...2770 verified (chain + download script). HDF5: tensor (10000,201,1024) float32, Nu=0.01 attr, x cell-centred dx=1/1024 on [0,1), t-coordinate has 202 entries (0..2.01) vs 201 frames (frame k = 0.01*k confirmed by solver).
 - 2026-11-09 19:49 IST: Split + processed arrays (train 4000 / val 500 / test 1000, x stride 4 -> 256 pts, 201 frames), seed 0. 6 tests pass. Baselines (val only) and IC leakage check run. Solver check: data follows u_t+(u^2/2)_x=(nu/pi)u_xx; 1024-cell solver rel L2 0.02-0.05% on 3 val samples.
 - 2026-11-09 19:52 IST: M2 prep done, NOTHING TRAINED. src/models.py (FNO 837,513 params, U-Net 1,067,241), scripts/train.py (resumable, val-only), scripts/evaluate.py (test needs --final), scripts/smoke.sh. Smoke runs (256 samples, 15 epochs) and 2-epoch timing runs at 4000 samples: FNO ~2.5-3.0 s/epoch, U-Net ~3.7-5.1 s/epoch, peak VRAM ~1.0 GB. Resume path tested (RESUMED from epoch 15). M1 closes when user approves subset/split. Gate (b) pending.
+- 2026-11-09 20:07 IST: User approved gate (b) and the subset/split (train 4000 / val 500 / test 1000, x stride 4). M1 closed. Full training started: FNO then U-Net, seeds 0-2, 300 epochs each, scripts/train_all.sh, logs/train_*.log. Estimate ~1h50m.
