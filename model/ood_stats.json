@@ -1,0 +1,19 @@
+{
+ "computed_on": "data/processed/train.npy initial conditions (n=4000, 256 points)",
+ "hf_wavenumber_cutoff": 32,
+ "train_range": {
+  "max_abs": {
+   "min": 0.0034851953387260437,
+   "max": 3.350226402282715,
+   "p99": 2.657707374095914
+  },
+  "hf_energy_frac": {
+   "min": 1.3348870337003521e-11,
+   "max": 0.014969569047948285,
+   "p99": 0.0009600994353115722
+  },
+  "abs_mean": {
+   "max": 2.4086609785445035
+  }
+ }
+}

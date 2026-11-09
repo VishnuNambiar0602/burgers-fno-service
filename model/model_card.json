@@ -1,0 +1,66 @@
+{
+ "name": "fno_s1",
+ "type": "Fourier Neural Operator, 1D, written from scratch (src/models.py)",
+ "parameters": 837513,
+ "config": {
+  "nt": 201,
+  "modes": 24,
+  "width": 64,
+  "layers": 4
+ },
+ "sha256": "21e63e824e5dc2183ebf7d577190f3c011726cc3e24c07eaa7b36a9c7ee0d07f",
+ "source": {
+  "name": "fno_s1",
+  "seed": 1,
+  "source_checkpoint": "checkpoints/fno_s1/best.pt",
+  "epoch": 298,
+  "val_relL2_whole_traj": 0.02765374816954136,
+  "torch_trained_with": "2.14.1+cu126"
+ },
+ "task": "initial condition u(x,0) -> 201 frames u(x, 0.01 k), k=0..200, one forward pass",
+ "equation": "u_t + (u^2/2)_x = (nu/pi) u_xx with nu = 0.01, periodic on [0,1) (PDEBench convention, verified against the data)",
+ "input": {
+  "allowed_lengths": [
+   256,
+   512
+  ],
+  "trained_at": 256,
+  "domain": "[0,1) periodic, cell-centred",
+  "note": "512 was checked zero-shot on validation data only (relL2 0.0271)"
+ },
+ "output": {
+  "frames": 201,
+  "dt": 0.01,
+  "t_max": 2.0
+ },
+ "training": {
+  "dataset": "PDEBench 1D_Burgers_Sols_Nu0.01.hdf5 (CC BY 4.0)",
+  "train_samples": 4000,
+  "val": 500,
+  "test": 1000,
+  "split_seed": 0,
+  "epochs": 300,
+  "x_subsample": "every 4th point (256)"
+ },
+ "metrics": {
+  "definition": "relative L2 over (t,x) per sample, mean over samples",
+  "deployed_seed1_val": 0.02765374816954136,
+  "deployed_seed1_test": 0.026377759873867035,
+  "fno_test_mean_3_seeds": 0.02665545791387558,
+  "fno_test_sd_3_seeds": 0.000382713577695836,
+  "unet_test_mean_3_seeds": 0.09035987158616383,
+  "near_shock_pooled_relL2_test_seed1": 0.13396015763282776,
+  "away_from_shock_pooled_relL2_test_seed1": 0.0415659137070179,
+  "mass_drift_pred_test_seed1": 0.00789723452180624,
+  "mass_drift_truth_test": 7.861152698751539e-05
+ },
+ "known_limitations": [
+  "Trained at one viscosity (nu = 0.01) and one family of initial conditions; nothing else is claimed.",
+  "Does not conserve total mass: drift is about 100x that of the reference data (see metrics).",
+  "Error is about 3x larger within a few grid points of shocks than away from them.",
+  "Error at t=0 is about 0.016: the network does not reproduce its own input exactly.",
+  "Fails on inputs unlike training: taller than 3.35, mean beyond about 2.4, very high-frequency or noisy inputs.",
+  "Not tested at any other grid length than 256 (trained) and 512 (validation only)."
+ ],
+ "ood_flag_meaning": "a flag means the input is outside the training range; no flag does NOT certify accuracy"
+}

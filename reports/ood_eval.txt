@@ -1,0 +1,14 @@
+false-alarm rate on all 500 validation ICs: 0.200% (1 flagged)
+family                                flagged  FNO relL2 (validate_m2)
+val_IC x1 (control, solver truth)          0%                   0.0267
+amplitude x0.5                             0%                   0.0133
+amplitude x2                              28%                   0.1004
+amplitude x3                              64%                   0.1949
+mean offset +1.5                          12%                   0.0554
+mean offset +3.0                          86%                   0.0886
+gaussian bump                              0%                   0.0174
+square wave                                0%                   0.1097
+white noise sd 0.3                       100%                   0.7077
+sine k=40 (random phase)                 100%                   1.5400
+sine k=100 (random phase)                100%                   1.5802
+constant 0.7                               0%                   0.0011
