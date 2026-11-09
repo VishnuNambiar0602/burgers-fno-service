@@ -7,8 +7,8 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 
 | Milestone | T+ deadline | Absolute deadline (IST) | Effective h (budget) | Actual completion | Status |
 |---|---|---|---|---|---|
-| M0 Discovery, environment, plan | T+6 | 2026-11-09 21:03 | ~1.5 | open | ON TRACK |
-| M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | | not started |
+| M0 Discovery, environment, plan | T+6 | 2026-11-09 21:03 | ~1.5 | 2026-11-09 18:52 (T+3h48m) | DONE |
+| M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | | IN PROGRESS (download running) |
 | M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | | not started |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | | not started |
 | M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | not started |
