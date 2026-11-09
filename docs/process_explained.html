@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How We Taught a Computer to Predict Waves</title>
+<style>
+  :root{
+    --bg:#fbfaf7; --card:#ffffff; --ink:#1d2330; --muted:#5b6475; --line:#e3e0d8;
+    --brand:#2f5fd0; --brand2:#e07a1f; --good:#1f8a4c; --bad:#c0392b; --kid:#fff4d6; --kidline:#f0cf74;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14171e; --card:#1c212b; --ink:#e9ecf3; --muted:#a2abbd; --line:#2e3646;
+      --brand:#7aa2ff; --brand2:#f0a45a; --good:#5fd08e; --bad:#ff7d6e; --kid:#2b2616; --kidline:#6b5a1f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171e; --card:#1c212b; --ink:#e9ecf3; --muted:#a2abbd; --line:#2e3646;
+    --brand:#7aa2ff; --brand2:#f0a45a; --good:#5fd08e; --bad:#ff7d6e; --kid:#2b2616; --kidline:#6b5a1f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 16px 80px}
+  h1{font-size:2rem;line-height:1.2;margin:.2em 0}
+  h2{font-size:1.45rem;margin:2.2em 0 .4em;padding-top:.6em;border-top:2px solid var(--line)}
+  h3{font-size:1.05rem;margin:1.4em 0 .3em;color:var(--brand)}
+  p{margin:.6em 0}
+  .sub{color:var(--muted);margin:0 0 1em}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px}
+  .toc a{color:var(--brand);text-decoration:none} .toc a:hover{text-decoration:underline}
+  .toc ol{margin:.3em 0;padding-left:1.3em;columns:2;column-gap:2em} @media (max-width:640px){.toc ol{columns:1}}
+  .kid{background:var(--kid);border:1px solid var(--kidline);border-radius:12px;padding:10px 14px;margin:.8em 0}
+  .kid::before{content:"🧒 Like you're 8: ";font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:.8em 0}
+  .w{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.93rem}
+  .w b{display:block;color:var(--brand);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+  table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:.93rem;display:block;overflow-x:auto}
+  th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left} th{background:var(--bg);font-weight:600}
+  .good{color:var(--good);font-weight:600} .bad{color:var(--bad);font-weight:600}
+  code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.88em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:1em 0}
+  .flow span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.88rem}
+  .flow i{color:var(--muted);font-style:normal}
+  img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:4px}
+  .bar{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;margin:4px 0;font-size:.9rem}
+  .bar div.t{background:var(--line);border-radius:6px;height:16px;overflow:hidden} .bar div.t div{height:100%;background:var(--brand)}
+  .bar.o div.t div{background:var(--brand2)}
+  .note{border-left:4px solid var(--brand2);padding:4px 12px;background:var(--card);border-radius:0 8px 8px 0}
+  .theme{position:fixed;top:10px;right:10px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.8rem}
+  footer{color:var(--muted);font-size:.85rem;margin-top:3em}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle light or dark">light / dark</button>
+<div class="wrap">
+
+<h1>How we taught a computer to predict waves</h1>
+<p class="sub">A plain-English tour of everything done so far on the <b>burgers-fno-service</b> project (QUEST Lab application), with the what, why, when and how of each step, plus a "like you're 8" box for each one.
+Written 9 Nov 2026, about 8 hours into the 72-hour clock (started 15:03 IST). Every number below was read from this project's own logs and reports. <b>The web app itself is not built yet</b>; that is the next stage.</p>
+
+<nav class="toc"><b>Contents</b>
+<ol>
+<li><a href="#goal">The goal in one minute</a></li>
+<li><a href="#equation">The equation (the thing we predict)</a></li>
+<li><a href="#data">Getting the data</a></li>
+<li><a href="#split">Splitting it fairly</a></li>
+<li><a href="#baselines">Silly guessers (baselines)</a></li>
+<li><a href="#solver">Our own careful calculator</a></li>
+<li><a href="#fno">The neural operator (FNO)</a></li>
+<li><a href="#train">Training it</a></li>
+<li><a href="#results">Did it work?</a></li>
+<li><a href="#tests">Trying to break it</a></li>
+<li><a href="#speed">Speed and memory</a></li>
+<li><a href="#wrong">What went wrong along the way</a></li>
+<li><a href="#limits">Honest limits</a></li>
+<li><a href="#next">What happens next</a></li>
+</ol></nav>
+
+<h2 id="goal">1. The goal in one minute</h2>
+<div class="grid">
+  <div class="w"><b>What</b>A website where you draw a starting wave and get back how it evolves, instantly, next to a slow trusted calculator's answer.</div>
+  <div class="w"><b>Why</b>Real physics solvers can be slow. A trained model can answer in milliseconds, if we can show it is accurate and say when it is not.</div>
+  <div class="w"><b>When</b>72 hours total. Done so far: data, checks, models, evaluation. Not done: the app, deployment.</div>
+  <div class="w"><b>How</b>Download real simulation data, train a model, test it hard, wrap it in a web service, put it on a free host.</div>
+</div>
+<div class="kid">Imagine you throw a stone in a pond. A physicist can calculate every ripple, but it takes a long time. We trained a "ripple guesser" that looks at the first splash and instantly draws what happens next. Our job is to prove it guesses well, and to be honest about where it guesses badly.</div>
+
+<h2 id="equation">2. The equation (the thing we predict)</h2>
+<p><b>What:</b> The 1D Burgers equation describes a quantity <code>u</code> (think: speed of cars along a road) that moves along and gets squished into sharp fronts called <em>shocks</em>, while a little friction (<em>viscosity</em>) smooths them. We use viscosity setting <code>ν = 0.01</code>, on a ring-shaped road of length 1 (when you leave one edge you re-enter at the other), for time 0 to 2.</p>
+<p><b>Why this one:</b> It is the classic test: simple to state, but shocks make it hard for neural networks.</p>
+<p><b>How we found the exact form:</b> the dataset's friction term is <code>ν/π</code>, not <code>ν</code>. We proved it by running our own solver four ways and seeing which one matched the stored answers (the right one was off by about 0.2%; the others were off by 7% to 68%).</p>
+<div class="kid">Cars drive on a circular road. Fast cars catch up with slow cars and bunch into a traffic jam with a sharp edge. A little bit of friction keeps that edge from being infinitely sharp.</div>
+
+<h2 id="data">3. Getting the data</h2>
+<div class="grid">
+  <div class="w"><b>What</b>PDEBench file <code>1D_Burgers_Sols_Nu0.01.hdf5</code>: 10,000 simulations, each 201 snapshots × 1024 points. 8,232,968,312 bytes (8.23 GB). Licence CC BY 4.0.</div>
+  <div class="w"><b>Why</b>Real, public benchmark data, so results can be compared and trusted.</div>
+  <div class="w"><b>When</b>15:24 to 19:37 on 9 Nov, slowed by a flaky connection (6 interruptions, all resumed).</div>
+  <div class="w"><b>How</b>A script that resumes from where it stopped and, at the end, checks the size and an "md5 fingerprint". Both matched (<code>e6d9a4f6…2770</code>).</div>
+</div>
+<div class="kid">Like downloading a huge photo album. We counted every page and checked a special stamp on the cover to be sure nothing got scratched or lost on the way.</div>
+<h3>What was inside (read from the file)</h3>
+<p>Shape (10000, 201, 1024), 32-bit numbers, no missing values (NaN count 0), values between −3.35 and 3.41. Starting waves are random sums of sine shapes, some squashed flat, so some are smooth and some are bumpy.</p>
+<figure><img src="../reports/samples.png" alt="four example simulations as colour maps with time going up"><figcaption>Four random samples: top = the whole simulation (x across, time up), bottom = snapshots at t = 0, 0.5, 1, 2. You can see fronts steepen.</figcaption></figure>
+
+<h2 id="split">4. Splitting it fairly</h2>
+<p><b>What:</b> 10,000 simulations → <b>4,000 for training</b>, <b>500 for validation</b> (to choose settings), <b>1,000 for the final test</b>. We also reduced each snapshot to 256 points (every 4th point) to fit the computer comfortably.</p>
+<p><b>Why:</b> If you grade a student on the questions they practised, the grade is meaningless. The test set stays sealed until the models are frozen. We split by whole simulation with a fixed random seed (0), so nothing leaks, and a test checks that no simulation appears in two sets.</p>
+<p><b>Leakage check:</b> 0 of 1,000 test starting waves were within 0.1% of any training one (closest: 2.4% apart).</p>
+<div class="kid">Practice sheets, a quiz, and a final exam. The final exam is kept in a locked drawer until the very end, and we opened it exactly once.</div>
+
+<h2 id="baselines">5. Silly guessers (baselines)</h2>
+<p><b>What and why:</b> Before trusting a fancy model, see how well a silly guesser does. If our model can't beat them, it is worthless. They were run on validation data first.</p>
+<table><tr><th>Guesser</th><th>Validation error</th><th>Test error</th></tr>
+<tr><td>"Nothing changes" (copy the start)</td><td>1.220</td><td>1.158</td></tr>
+<tr><td>"Everything flattens to the average"</td><td>0.477</td><td>0.456</td></tr></table>
+<p class="sub">Error = relative L2: 0 is perfect, 1 means "as wrong as the answer is big". "Nothing changes" is worse than guessing zero, because waves really do move.</p>
+<div class="kid">Guess 1: "the waves never move." Wrong. Guess 2: "the waves melt into a flat sheet." Closer, still wrong. Our model has to beat both by a lot.</div>
+
+<h2 id="solver">6. Our own careful calculator (the numerical solver)</h2>
+<p><b>What:</b> A short program (<code>src/solver.py</code>, about 50 lines) that solves Burgers step by step the "textbook" way (finite volumes, so the total amount of "stuff" is conserved to round-off).</p>
+<p><b>Why:</b> (a) an independent check that we understand the equation, (b) the "trusted answer" the web app will show next to the neural network's, (c) a way to test inputs the dataset doesn't contain.</p>
+<p><b>How good:</b> Started from the dataset's starting waves, it reproduced the stored answers to <b>0.02% to 0.05%</b> error on three validation cases. Its "stuff conservation" drift was about 1e-13, versus up to 6e-5 in the dataset itself.</p>
+<div class="kid">It's a slow, careful calculator that does the maths one tiny time-step at a time, like walking a staircase one stair at a time. It's right, but slow (about 0.4 seconds per case).</div>
+
+<h2 id="fno">7. The neural operator (FNO) and the competitor (U-Net)</h2>
+<p><b>What:</b> A <b>Fourier Neural Operator</b> takes the starting wave and outputs the <em>whole</em> evolution in one go. We wrote it ourselves: a lift layer, four "Fourier layers", and a small output head. 837,513 learnable numbers. The competitor, a small <b>U-Net</b> (a standard image-style network), has 1,067,241.</p>
+<p><b>Why an FNO:</b> Instead of looking at pixels, it looks at the wave's frequencies (using the Fast Fourier Transform) and learns how each frequency changes. That is a natural fit for waves on a ring.</p>
+<p><b>Why a U-Net too:</b> To tell whether the FNO is actually good, not just "good for a neural net".</p>
+<div class="flow"><span>starting wave (256 numbers)</span><i>→</i><span>FFT to frequencies</span><i>→</i><span>learned mixing ×4</span><i>→</i><span>back to space</span><i>→</i><span>201 snapshots</span></div>
+<div class="kid">Instead of asking "what is each tiny spot doing?", the FNO asks "which musical notes are in this wave, and how does each note change over time?" Music is easier to predict than a messy picture.</div>
+
+<h2 id="train">8. Training it</h2>
+<p><b>What and when:</b> Gate (b) approved at 20:07. Six runs (FNO and U-Net, 3 random seeds each), 300 rounds each over the 4,000 practice simulations, finished 21:10 with no failures. FNO took about 7 minutes per run (about 1.4 s per round), U-Net about 13.5 minutes. Memory on the graphics card: about 1.0 GB.</p>
+<p><b>How:</b> The model guesses, we measure how wrong (relative L2), and an optimiser (Adam) nudges the 837,513 numbers to be less wrong. Each round saves a checkpoint, so a crash would resume instead of restart. We pick the best round by <em>validation</em> error only. The training code never loads the test set.</p>
+<p><b>A smoke test came first</b> (tiny data, 15 rounds, clearly labelled "not a trained model") to check the code runs, memory fits, loss falls, and resuming works.</p>
+<div class="kid">Like practising free throws: shoot, see how far off you were, adjust a tiny bit, repeat 300 times. Three kids (seeds) practised separately so we know it wasn't luck.</div>
+
+<h2 id="results">9. Did it work? (final test set, opened once)</h2>
+<table>
+<tr><th>Model</th><th>Error (mean of 1,000)</th><th>Middle sample</th><th>Worst 5%</th></tr>
+<tr><td>Copy the start</td><td>1.158</td><td>1.033</td><td>2.617</td></tr>
+<tr><td>Flat average</td><td>0.456</td><td>0.382</td><td>0.985</td></tr>
+<tr><td>U-Net (3 seeds)</td><td>0.0904 ± 0.0053</td><td>0.063–0.073</td><td>0.25–0.29</td></tr>
+<tr><td><b>FNO (3 seeds)</b></td><td class="good">0.0267 ± 0.0004</td><td>about 0.021</td><td>about 0.065</td></tr>
+</table>
+<div style="margin-top:10px">
+<div class="bar"><span>Copy the start</span><div class="t"><div style="width:100%"></div></div><span>1.158</span></div>
+<div class="bar"><span>Flat average</span><div class="t"><div style="width:39%"></div></div><span>0.456</span></div>
+<div class="bar o"><span>U-Net</span><div class="t"><div style="width:7.8%"></div></div><span>0.090</span></div>
+<div class="bar"><span>FNO</span><div class="t"><div style="width:2.3%"></div></div><span>0.027</span></div>
+</div>
+<p>The FNO is about <b>3.4× more accurate</b> than the U-Net, and the three FNO seeds differ by only 0.0004, so this is not luck. Validation gave the same picture (FNO 0.0277–0.0283), which suggests we did not fool ourselves while choosing settings.</p>
+<h3>Where does it go wrong?</h3>
+<table>
+<tr><th>FNO (test)</th><th>Error</th></tr>
+<tr><td>Early (t = 0.01)</td><td>0.014</td></tr><tr><td>t = 0.5</td><td>0.026</td></tr><tr><td>t = 1.0</td><td>0.027</td></tr><tr><td>t = 2.0 (end)</td><td>0.039</td></tr>
+<tr><td>Right next to a shock</td><td class="bad">0.134</td></tr><tr><td>Away from shocks</td><td class="good">0.042</td></tr>
+</table>
+<p class="sub">"Near a shock" = true slope steeper than −20, plus or minus 5 grid points (about 2% of all points). I picked that rule myself and did not tune it.</p>
+<figure><img src="../reports/spotcheck.png" alt="truth, FNO, solver and error for three validation samples"><figcaption>Three validation cases: truth, FNO, our solver, and where the FNO is wrong (right column: bright = bigger mistake). Mistakes line up with the shock lines and show small ripples.</figcaption></figure>
+<div class="kid">On average the model is off by about 3 parts in 100, and the U-Net by about 9 parts in 100. Its mistakes are mostly at the sharp edges of traffic jams, the hardest bit for everyone.</div>
+
+<h2 id="tests">10. Trying to break it (validation tests)</h2>
+<p>You asked for test cases. All run on validation data or made-up inputs, never the test set.</p>
+<table>
+<tr><th>Check</th><th>Result</th><th>Verdict</th></tr>
+<tr><td>Re-compute the score independently in 64-bit numpy</td><td>0.027654 both ways</td><td class="good">pass</td></tr>
+<tr><td>Do saved arrays match the raw file rows they claim to?</td><td>exact (train, val, test samples)</td><td class="good">pass</td></tr>
+<tr><td>Does it use its input? (feed the wrong wave)</td><td>error 1.92 (vs 0.028)</td><td class="good">pass</td></tr>
+<tr><td>Tiny noise (1%) in the input</td><td>output changes 0.24%</td><td class="good">stable</td></tr>
+<tr><td>Is time lined up? (shift the answer by ±1, ±2 frames)</td><td>best at 0, worse either side</td><td class="good">pass</td></tr>
+<tr><td>Slide the starting wave around the ring</td><td>error identical (0.0275) for all shifts</td><td class="good">pass</td></tr>
+<tr><td>Feed it 512 points instead of 256</td><td>FNO 0.0271 (U-Net: 0.56)</td><td class="good">FNO fine</td></tr>
+<tr><td>Smooth bump (not in training)</td><td>FNO 0.017</td><td class="good">fine</td></tr>
+<tr><td>Square wave (sudden jump)</td><td>FNO 0.110</td><td class="bad">4× worse</td></tr>
+<tr><td>Waves 2× / 3× taller than ever seen</td><td>FNO 0.100 / 0.195</td><td class="bad">degrades</td></tr>
+<tr><td>Random noise as starting wave</td><td>FNO 0.708</td><td class="bad">fails</td></tr>
+<tr><td>Very wiggly waves (40 or 100 wiggles)</td><td>FNO about 1.5</td><td class="bad">fails badly</td></tr>
+<tr><td>Does it conserve total "stuff"?</td><td>drifts about 7.9e-3 vs 7.9e-5 in the real data</td><td class="bad">no (100× more drift)</td></tr>
+</table>
+<p>The "out-of-distribution" rows are why the web app must show a warning for tall, noisy or very wiggly inputs. The model hasn't seen them and its answer would be wrong without looking wrong.</p>
+<div class="kid">We tried tricking it: showing it a wave it never met, a wave that is too tall, and a wave that is pure static. On familiar waves it is great. On weird waves it confidently draws nonsense, so the website will wave a warning flag.</div>
+
+<h2 id="speed">11. Speed and memory (on this laptop)</h2>
+<table>
+<tr><th>Measurement</th><th>Result</th></tr>
+<tr><td>FNO, one input, CPU, 1 or 2 threads</td><td>1.8 ms typical (p95 2.1 ms)</td></tr>
+<tr><td>FNO, 8 inputs together, CPU, 2 threads</td><td>4.5 ms</td></tr>
+<tr><td>Same, GPU, one input</td><td>4.2 ms (the GPU is not faster for single inputs)</td></tr>
+<tr><td>Our numpy solver, one input</td><td>about 380 ms</td></tr>
+<tr><td>Loading torch library</td><td>about 1.5 s (once)</td></tr>
+<tr><td>Memory after loading (this big CUDA build of torch)</td><td>about 530 MB, peak about 565 MB</td></tr>
+</table>
+<p class="note"><b>Careful:</b> the FNO is about 200× faster than our simple solver here, but the solver isn't optimised and this laptop is far faster than a free cloud host (about 2 slow CPUs). Using all 14 threads made it <em>slower</em> (3.0 ms vs 1.8 ms), so the server will limit threads. The real latency number comes from the live deployment, not from here.</p>
+<div class="kid">The careful calculator takes about as long as blinking. The model answers about 200 times faster, before you finish the blink.</div>
+
+<h2 id="wrong">12. What went wrong along the way (honestly)</h2>
+<ul>
+<li><b>Git repo in the wrong place (15:20):</b> the existing repo was rooted at <code>D:\Projects</code>, the parent of all your other projects. A push would have uploaded everything. I reverted my changes to it and made a separate repo in <code>Pre-doc</code>. That parent repo was already damaged ("bad tree object HEAD"); I left it alone.</li>
+<li><b>Install timed out (15:39):</b> pip's 2.6 GB torch download timed out and can't resume. Fixed with a resumable download.</li>
+<li><b>Machine slept (15:53 to 18:40):</b> every background job stopped for about 2h47m. Cause not confirmed (Windows showed a reboot at 18:35).</li>
+<li><b>Two downloaders (18:49):</b> I started one while a watcher had already started another, so both wrote the same file. I killed both within about 40 seconds and cut the file back to the last safe point. The final md5 matched, so no damage.</li>
+<li><b>Lockfile pointed at a local path:</b> pip recorded torch as a file on this disk. Fixed so it works elsewhere.</li>
+<li><b>VRAM misreport:</b> Windows said 4 GB, PyTorch measured 6.44 GB. Memory use turned out to be about 1 GB either way.</li>
+</ul>
+
+<h2 id="limits">13. Honest limits (what is NOT shown)</h2>
+<ul>
+<li>One viscosity (ν = 0.01), one family of starting waves, 256 points. Nothing else is claimed.</li>
+<li>The FNO still improved at the last round (best at round 297–298), so it is probably not fully trained.</li>
+<li>It does not conserve mass, and its error at t = 0 is 0.016, i.e. it doesn't copy its own input perfectly. I suggested a fix (build the input into the output) but you chose to keep the current models.</li>
+<li>Published comparison: I could not find reliable numbers to compare against. The tables I reached were garbled; the best guess (FNO nRMSE about 7.8e-3, U-Net about 0.22 for ν = 0.01) is <b>unverified</b> and measured differently (autoregressive, more data, 1024 points). Please check the PDEBench appendix yourself. See <code>reports/published_comparison.md</code>.</li>
+<li>Latency numbers are from this laptop only. Nothing is deployed, and no live URL exists yet.</li>
+<li>Nothing is pushed to GitHub; there is no remote configured.</li>
+</ul>
+
+<h2 id="next">14. What happens next</h2>
+<div class="flow"><span>M3: FastAPI backend (/predict, /health, /model-info)</span><i>→</i><span>M4: live skeleton on a free host</span><i>→</i><span>M5: front end, solver side-by-side, warnings</span><i>→</i><span>M6: final checks, README, commit</span></div>
+<table><tr><th>Milestone</th><th>Due (IST)</th><th>State</th></tr>
+<tr><td>M0 environment</td><td>9 Nov 21:03</td><td class="good">done 18:52</td></tr>
+<tr><td>M1 data and split</td><td>10 Nov 05:03</td><td class="good">done 20:07</td></tr>
+<tr><td>M2 models and evaluation</td><td>10 Nov 21:03</td><td class="good">done 21:13</td></tr>
+<tr><td>M3 backend</td><td>11 Nov 05:03</td><td>in progress</td></tr>
+<tr><td>M4 live skeleton</td><td>11 Nov 11:03</td><td>not started</td></tr>
+<tr><td>M5 front end</td><td>11 Nov 21:03</td><td>not started</td></tr>
+<tr><td>M6 final commit</td><td>12 Nov 09:03</td><td>not started</td></tr></table>
+<div class="kid">So far we built the "ripple guesser" and checked it. Next we put it behind a website, so anyone can draw a wave and see the guess, next to the slow careful answer, with a warning light for weird drawings.</div>
+
+<footer>Generated locally from the project's own logs and reports in <code>reports/</code> and <code>logs/</code>. Nothing here was published online.</footer>
+</div>
+<script>
+  (function(){
+    var b=document.getElementById('theme'), r=document.documentElement;
+    try{var s=localStorage.getItem('theme'); if(s) r.setAttribute('data-theme',s);}catch(e){}
+    b.addEventListener('click',function(){
+      var dark = r.getAttribute('data-theme')==='dark' || (!r.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+      var n = dark ? 'light' : 'dark'; r.setAttribute('data-theme', n);
+      try{localStorage.setItem('theme', n);}catch(e){}
+    });
+  })();
+</script>
+</body>
+</html>
