@@ -11,7 +11,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | 2026-11-09 20:07 (T+5h03m) | DONE |
 | M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | 2026-11-09 21:13 (T+6h09m) | DONE (kept models; extra validation 23:03) |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | 2026-11-09 23:09 (T+8h05m) | DONE |
-| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | not started |
+| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | BLOCKED: HF Docker Spaces need PRO (402); host decision needed |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | | not started |
 | M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | | not started |
 | Buffer (no new features) | T+72 | 2026-11-12 15:03 | - | | - |
@@ -36,3 +36,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-09 23:09 IST: M3 DONE (T+8h05m, due 11 Nov 05:03). FastAPI app (app/main.py): /health, /model-info, /predict (+optional solver), OOD flag, input validation. 18 tests pass. Real local server check (scripts/live_check.py): live vs offline max abs diff 7.3e-07, same sha256, relL2 vs truth 0.01179. HTTP /predict median 74 ms (463 kB body), solver adds ~0.8 s. OOD flag: 0.2% false alarms on val, misses moderate degradations (amp x2 28% flagged, square wave 0%). Bugs found+fixed: torch version type in package, NaN input crashed the 422 handler.
 - 2026-11-09 23:45 IST: M4 prep (no deploy, no token read): requirements-serve.txt (CPU torch), deploy/Dockerfile, deploy/SPACE_README.md, scripts/deploy_hf.py (--dry-run stages 12 files, 3.38 MB), .env.example + blank .env (git-ignored), root route. huggingface_hub 2.4.0 installed (small, lockfile updated). Waiting on gate (c) and the user filling .env.
 - 2026-11-10 00:02 IST: Docker local test PASSED: image burgers-fno-local 319 MB built from the staged 12 files (python:3.13-slim + CPU torch 2.14.1); container up in <1 s, live_check: max abs diff vs offline 7.77e-07, same sha256, HTTP /predict median 64 ms, container memory 183 MiB. Container removed, image kept. Docker Desktop was started by Claude at 23:57 on user request and is still running. Waiting for user: .env filled + run deploy_hf.py (public Space, name burgers-fno-service).
+- 2026-11-10 08:41 IST: deploy_hf.py run (user pre-authorised): HF 402 Payment Required for Docker Space on free tier. M4 BLOCKED (external). See WORKLOG.md.
