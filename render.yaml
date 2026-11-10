@@ -1,0 +1,9 @@
+# Render blueprint (untested): free web service built from deploy/Dockerfile.render. Needs the repo on GitHub, which has not been pushed.
+services:
+  - type: web
+    name: burgers-fno-service
+    runtime: docker
+    dockerfilePath: ./deploy/Dockerfile.render
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health

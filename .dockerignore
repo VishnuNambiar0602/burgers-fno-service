@@ -1,0 +1,16 @@
+.git
+.venv
+data
+checkpoints
+logs
+reports
+build
+docs
+notebooks
+tests
+scripts
+splits
+*.npy
+*.hdf5
+.env
+.env.*

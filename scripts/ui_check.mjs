@@ -66,6 +66,13 @@ try {
     check("desktop_round_trip_exceeds_solver_time", parseFloat(rt.rt) >= parseFloat(rt.solver) * 1000 * 0.9, rt);
     check("desktop_title_and_equation", await ev("document.title.length>0 && document.body.textContent.indexOf('(ν/π)')>=0 && document.body.textContent.indexOf('ν = 0.01 (fixed)')>=0 && document.body.textContent.indexOf('256 grid points')>=0"));
     const o1 = await overflow(); check("desktop_no_horizontal_overflow", o1.scrollW <= o1.clientW + 1 && o1.bad.length === 0, o1);
+    // downloads: capture the Blob the page builds when the buttons are clicked
+    await ev("window.__blobs=[];var o=URL.createObjectURL;URL.createObjectURL=function(b){window.__blobs.push(b);return o.call(URL,b)};document.getElementById('dl-csv').click();document.getElementById('dl-json').click();0");
+    await sleep(800);
+    const csv = await ev("window.__blobs[0] ? window.__blobs[0].text().then(function(t){var l=t.split(String.fromCharCode(10));return {n:l.length,head:l[0],row1:l[1]}}) : null");
+    check("download_csv_has_header_and_51457_lines", csv && csv.head === "t,x,u_fno,u_solver,abs_error" && csv.n === 201 * 256 + 1, csv);
+    const js = await ev("window.__blobs[1] ? window.__blobs[1].text().then(function(t){var d=JSON.parse(t);return {u0:d.u0.length,fno:d.fno_u.length,solver:d.solver_u.length,hasOod:typeof d.ood.is_ood,model:d.model.name}}) : null");
+    check("download_json_complete", js && js.u0 === 256 && js.fno === 201 && js.solver === 201 && js.hasOod === "boolean", js);
     await shot("ui_desktop_light.png");
     // 2. keyboard: first Tab lands on the skip link
     await send("Page.navigate", { url: base + "/" }); await sleep(1500);

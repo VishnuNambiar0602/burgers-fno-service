@@ -1,0 +1,13 @@
+# Same image as deploy/Dockerfile but listens on $PORT (Render sets it). NOT yet built or tested; the HF variant was.
+# Build context = repository root.
+FROM python:3.13-slim
+ENV PYTHONUNBUFFERED=1 TORCH_THREADS=1 OMP_NUM_THREADS=1
+RUN useradd -m -u 1000 user
+WORKDIR /home/user/app
+COPY --chown=user requirements-serve.txt .
+RUN pip install --no-cache-dir -r requirements-serve.txt
+COPY --chown=user app ./app
+COPY --chown=user src ./src
+COPY --chown=user model ./model
+USER user
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

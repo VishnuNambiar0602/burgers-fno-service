@@ -122,7 +122,7 @@
     var nt = resp.t.length, nx = resp.x.length, lines = ["t,x,u_fno,u_solver,abs_error"];
     for (var k = 0; k < nt; k++) for (var i = 0; i < nx; i++) {
       var f = fno[k * nx + i], s = solver[k * nx + i];
-      lines.push(resp.t[k] + "," + resp.x[i] + "," + f + "," + s + "," + Math.abs(f - s));
+      lines.push(resp.t[k] + "," + resp.x[i] + "," + f + "," + s + "," + Number(Math.abs(f - s).toPrecision(7)));
     }
     return lines.join("\n");
   }
