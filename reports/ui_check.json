@@ -1,0 +1,112 @@
+{
+ "desktop_run_done": {
+  "ok": true,
+  "info": "status|Done."
+ },
+ "desktop_results_visible": {
+  "ok": true
+ },
+ "desktop_ok_banner_no_ood": {
+  "ok": true
+ },
+ "desktop_canvases_have_content": {
+  "ok": true,
+  "info": [
+   681,
+   691,
+   204,
+   89,
+   65,
+   55
+  ]
+ },
+ "desktop_round_trip_exceeds_solver_time": {
+  "ok": true,
+  "info": {
+   "rt": "797 ms",
+   "solver": "0.36 s"
+  }
+ },
+ "desktop_title_and_equation": {
+  "ok": true
+ },
+ "desktop_no_horizontal_overflow": {
+  "ok": true,
+  "info": {
+   "scrollW": 1265,
+   "clientW": 1265,
+   "bad": []
+  }
+ },
+ "download_csv_has_header_and_51457_lines": {
+  "ok": true,
+  "info": {
+   "n": 51457,
+   "head": "t,x,u_fno,u_solver,abs_error",
+   "row1": "0,0.001953,0.0175,0.012272,0.005228"
+  }
+ },
+ "download_json_complete": {
+  "ok": true,
+  "info": {
+   "u0": 256,
+   "fno": 201,
+   "solver": 201,
+   "hasOod": "boolean",
+   "model": "fno_s1"
+  }
+ },
+ "keyboard_first_tab_is_skip_link": {
+  "ok": true,
+  "info": "A.skip"
+ },
+ "mobile_ood_run_done": {
+  "ok": true,
+  "info": "status|Done."
+ },
+ "mobile_ood_banner_shown": {
+  "ok": true
+ },
+ "mobile_ood_banner_has_reason": {
+  "ok": true
+ },
+ "mobile_no_horizontal_overflow": {
+  "ok": true,
+  "info": {
+   "scrollW": 375,
+   "clientW": 375,
+   "bad": []
+  }
+ },
+ "draw_snapped_message": {
+  "ok": true,
+  "info": {
+   "msg": "Snapped: smoothed to at most 8 waves (changed your drawing by 9%).",
+   "events": {
+    "pointerdown": 1,
+    "pointermove": 61,
+    "pointerup": 1
+   },
+   "box": {
+    "x": 31,
+    "y": 278.6875,
+    "w": 923,
+    "h": 346.125
+   }
+  }
+ },
+ "draw_input_updated": {
+  "ok": true,
+  "info": "Your drawing (snapped): max |u| = 2.23, mean = -0.06. 256 points."
+ },
+ "draw_run_done": {
+  "ok": true,
+  "info": "status|Done."
+ },
+ "paste_error_shown": {
+  "ok": true
+ },
+ "run_disabled_without_valid_input": {
+  "ok": true
+ }
+}
