@@ -106,6 +106,6 @@ def test_unknown_route_404(client):
     assert client.get("/nope").status_code == 404
 
 
-def test_root_lists_endpoints(client):
-    j = client.get("/").json()
+def test_api_root_lists_endpoints(client):
+    j = client.get("/api").json()
     assert j["service"] == "burgers-fno-service" and "POST /predict" in j["endpoints"]

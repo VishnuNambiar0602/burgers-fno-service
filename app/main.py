@@ -12,7 +12,8 @@ import numpy as np
 import torch
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field, field_validator
 
@@ -79,9 +80,29 @@ def _round(a):
     return np.round(np.asarray(a, dtype=np.float64), 6).tolist()
 
 
-@app.get("/")
-def root():
-    return {"service": "burgers-fno-service", "status": "skeleton (no front end yet)", "docs": "/docs",
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+CSP = ("default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; "
+       "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    resp = await call_next(request)
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    if request.url.path == "/" or request.url.path.startswith("/static/"):   # /docs (Swagger) needs its own CDN assets
+        resp.headers["Content-Security-Policy"] = CSP
+    return resp
+
+
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+def index():
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"), media_type="text/html")
+
+
+@app.get("/api")
+def api_root():
+    return {"service": "burgers-fno-service", "docs": "/docs", "ui": "/",
             "endpoints": ["GET /health", "GET /model-info", "POST /predict"]}
 
 

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burgers FNO Solver</title>
+<meta name="description" content="A Fourier Neural Operator predicts the solution of the 1D viscous Burgers equation; compare it with a numerical solver.">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header class="top">
+  <div class="wrap bar">
+    <h1>Burgers FNO Solver</h1>
+    <div class="bar-right">
+      <span id="api-badge" class="badge" role="status">API: checking…</span>
+      <button type="button" id="theme" class="btn ghost" aria-label="Switch between light and dark theme">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<section id="intro" aria-labelledby="h-intro">
+  <h2 id="h-intro">The problem</h2>
+  <p>Pick a starting wave <var>u(x, 0)</var> on a ring-shaped road of length 1. The <strong>viscous Burgers equation</strong> says how it evolves: fast parts catch up with slow parts and steepen into sharp fronts (<em>shocks</em>), while a little viscosity smooths them.</p>
+  <p class="equation" role="math" aria-label="u sub t plus the x derivative of u squared over 2 equals nu over pi times u sub x x">
+    ∂u/∂t + ∂/∂x ( u²/2 ) = (ν/π) · ∂²u/∂x²
+  </p>
+  <p>The factor is <strong>ν/π</strong>, not plain ν. That is the convention used by the PDEBench data this model learned from, and we checked it against the stored solutions.</p>
+  <ul class="chips" aria-label="Fixed settings">
+    <li>ν = 0.01 (fixed)</li><li>256 grid points</li><li>x ∈ [0, 1), periodic</li><li>t from 0 to 2 in 201 steps</li>
+  </ul>
+  <p>A <strong>Fourier Neural Operator (FNO)</strong>, a neural network trained on 4,000 simulations, predicts the whole evolution in one pass. Next to it we run an ordinary <strong>numerical solver</strong> on the server, so you can see where the network is right and where it is not.</p>
+</section>
+
+<section id="input" aria-labelledby="h-input">
+  <h2 id="h-input">1. Choose an initial condition</h2>
+  <fieldset class="src">
+    <legend>Where should the starting wave come from?</legend>
+    <label><input type="radio" name="src" value="preset" checked> Preset</label>
+    <label><input type="radio" name="src" value="mix"> Build from sines</label>
+    <label><input type="radio" name="src" value="draw"> Draw it</label>
+    <label><input type="radio" name="src" value="paste"> Paste numbers</label>
+  </fieldset>
+
+  <div id="panel-preset" class="panel">
+    <div class="row">
+      <label for="preset">Preset</label>
+      <select id="preset"></select>
+      <button type="button" id="reroll" class="btn" hidden>Re-roll random</button>
+    </div>
+    <p id="preset-note" class="note"></p>
+  </div>
+
+  <div id="panel-mix" class="panel" hidden>
+    <p class="note">u(x) = mean + Σ amplitude · sin(2π · waves · x + phase). Waves is how many full oscillations fit in the domain.</p>
+    <div class="mixgrid" id="mixgrid"></div>
+    <div class="row"><label for="mix-mean">Mean</label><input id="mix-mean" type="number" step="0.1" value="0"></div>
+  </div>
+
+  <div id="panel-draw" class="panel" hidden>
+    <p class="note">Draw one stroke from left to right with a mouse, pen or finger. Drawing needs a pointer; keyboard users can use "Build from sines" or "Paste numbers" instead.</p>
+    <canvas id="draw-canvas" class="plot draw" role="img" aria-label="Drawing area: draw the initial condition as one stroke from left to right. Vertical range minus 3.5 to 3.5."></canvas>
+    <div class="row">
+      <label class="inline"><input type="checkbox" id="snap" checked> Snap to the supported family (smooth it to at most 8 waves; recommended)</label>
+      <button type="button" id="clear-draw" class="btn">Clear drawing</button>
+    </div>
+    <p class="note">Hand-drawn curves are usually harder for the model than its training inputs: in tests with synthetic drawings the FNO and the solver differed by about 6–8% even after snapping (about 2–3% for in-family inputs), and the out-of-distribution warning did not fire. Always check the solver comparison.</p>
+    <p id="draw-msg" class="note" role="status"></p>
+  </div>
+
+  <div id="panel-paste" class="panel" hidden>
+    <label for="paste">256 numbers, separated by commas, spaces or newlines (values at x = (i + 0.5)/256)</label>
+    <textarea id="paste" rows="4" spellcheck="false"></textarea>
+    <div class="row"><button type="button" id="apply-paste" class="btn">Use these numbers</button></div>
+    <p id="paste-msg" class="note" role="status"></p>
+  </div>
+
+  <h3>Input that will be sent to the model</h3>
+  <canvas id="input-plot" class="plot wide" role="img" aria-label="Plot of the initial condition"></canvas>
+  <p id="input-summary" class="note"></p>
+  <p id="input-warning" class="warn" role="status" hidden></p>
+
+  <div class="runrow">
+    <button type="button" id="run" class="btn primary">Run the FNO and the solver</button>
+    <span id="status" class="status" role="status" aria-live="polite"></span>
+  </div>
+</section>
+
+<section id="results" aria-labelledby="h-results" hidden>
+  <h2 id="h-results">2. Results</h2>
+  <div id="ood-banner" role="alert"></div>
+  <div id="metrics" class="cards"></div>
+
+  <h3>Space-time solution (time goes up)</h3>
+  <div class="hmgrid">
+    <figure><canvas id="hm-fno" class="plot heat" role="img" aria-label="Heatmap of the FNO solution"></canvas><figcaption>FNO prediction (from the API)</figcaption></figure>
+    <figure><canvas id="hm-solver" class="plot heat" role="img" aria-label="Heatmap of the numerical solver solution"></canvas><figcaption>Numerical solver (from the API)</figcaption></figure>
+    <figure><canvas id="hm-error" class="plot heat" role="img" aria-label="Heatmap of the absolute difference"></canvas><figcaption>|FNO − solver|, computed in your browser from the two arrays above</figcaption></figure>
+  </div>
+
+  <h3>Profile at a chosen time</h3>
+  <div class="row">
+    <label for="t-slider">Time</label>
+    <input id="t-slider" type="range" min="0" max="200" step="1" value="100">
+    <output id="t-readout" for="t-slider">t = 1.00</output>
+  </div>
+  <canvas id="profile-plot" class="plot wide" role="img" aria-label="Solution profile at the chosen time"></canvas>
+  <p id="profile-summary" class="note"></p>
+  <details><summary>Numbers at this time (every 16th grid point)</summary><div class="tablewrap"><table id="profile-table"></table></div></details>
+
+  <h3>How the difference grows with time</h3>
+  <canvas id="err-time-plot" class="plot wide" role="img" aria-label="Relative difference between FNO and solver versus time"></canvas>
+
+  <div class="row dl">
+    <button type="button" id="dl-json" class="btn">Download JSON</button>
+    <button type="button" id="dl-csv" class="btn">Download CSV</button>
+  </div>
+  <p id="provenance" class="note"></p>
+</section>
+
+<section id="about" aria-labelledby="h-about">
+  <h2 id="h-about">About the model, and its limits</h2>
+  <div id="model-info" class="cards"><p class="note">Loading model information…</p></div>
+  <h3>Please read: what this model cannot do</h3>
+  <ul class="limits">
+    <li><strong>Shocks are its weak spot.</strong> Close to a shock the error was about 3× larger than elsewhere (0.134 vs 0.042 in tests).</li>
+    <li><strong>It does not copy its own input perfectly.</strong> At t = 0 the output is off by about 1.6% (relative), so the first frame is not exact.</li>
+    <li><strong>It does not conserve mass.</strong> The total amount of "stuff" drifts about 100× more than in the reference data. The numerical solver conserves it to rounding error.</li>
+    <li><strong>One viscosity, one family of inputs.</strong> It was trained only for ν = 0.01 and smooth random wave mixtures at 256 points. Anything else is outside what was tested.</li>
+    <li><strong>A warning is not a guarantee either way.</strong> Taller, noisier or much more wiggly inputs raise a warning, but milder problems (for example a square wave) can be wrong without one. Always look at the solver next to it.</li>
+    <li><strong>It is a learned approximation, not a proof.</strong> The numerical solver is the reference; the FNO is just much faster.</li>
+  </ul>
+  <p class="note">Data: PDEBench (Takamoto et al., 2022), DaRUS DOI 10.18419/darus-2986, licence CC BY 4.0. API docs: <a href="/docs">/docs</a> · <a href="/model-info">/model-info</a> · <a href="/health">/health</a></p>
+</section>
+</main>
+
+<footer class="wrap foot"><p class="note">Results on this page are only ever displayed from API responses. Nothing is simulated in your browser.</p></footer>
+
+<script src="/static/lib.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
