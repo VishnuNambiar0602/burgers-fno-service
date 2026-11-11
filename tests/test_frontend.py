@@ -129,9 +129,9 @@ def test_accessibility_basics():
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
 def test_lib_js_unit_tests():
-    r = subprocess.run(["node", "tests/js/test_lib.js"], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    r = subprocess.run(["node", "tests/js/test_lib.js"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     assert r.returncode == 0, r.stdout[-1500:]
-    r = subprocess.run(["node", "--check", "app/static/app.js"], cwd=ROOT, capture_output=True, text=True, timeout=30)
+    r = subprocess.run(["node", "--check", "app/static/app.js"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
     assert r.returncode == 0, r.stderr
 
 
@@ -160,7 +160,7 @@ def _serve(env_extra=None):
 def _browser(port, scenario, url=None):
     out = os.path.join(ROOT, "build", "ui_test_out")
     os.makedirs(out, exist_ok=True)
-    r = subprocess.run(["node", "scripts/ui_check.mjs", url or f"http://127.0.0.1:{port}", out, scenario], cwd=ROOT, capture_output=True, text=True, timeout=400)
+    r = subprocess.run(["node", "scripts/ui_check.mjs", url or f"http://127.0.0.1:{port}", out, scenario], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=400)
     try:
         res = json.loads(r.stdout)
     except Exception:

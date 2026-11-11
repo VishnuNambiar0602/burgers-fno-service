@@ -62,7 +62,7 @@ def test_real_browser_agent_mode_and_pdf():
                 time.sleep(0.5)
         out = os.path.join(ROOT, "build", "ui_test_out")
         os.makedirs(out, exist_ok=True)
-        r = subprocess.run(["node", "scripts/ui_check.mjs", f"http://127.0.0.1:{port}", out, "features"], cwd=ROOT, capture_output=True, text=True, timeout=400)
+        r = subprocess.run(["node", "scripts/ui_check.mjs", f"http://127.0.0.1:{port}", out, "features"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=400)
         res = json.loads(r.stdout)
         if "skipped" in res:
             pytest.skip(res["skipped"])
