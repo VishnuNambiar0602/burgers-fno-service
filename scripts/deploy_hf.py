@@ -16,11 +16,11 @@ STAGE = os.path.join(ROOT, "build", "space_stage")
 FILES = {                                   # staged path -> source path (relative to repo root)
     "Dockerfile": "deploy/Dockerfile", "README.md": "deploy/SPACE_README.md",
     "requirements-serve.txt": "requirements-serve.txt",
-    "app/__init__.py": "app/__init__.py", "app/main.py": "app/main.py",
+    "app/__init__.py": "app/__init__.py", "app/main.py": "app/main.py", "app/mcp.py": "app/mcp.py", "app/waves.py": "app/waves.py",
     "src/__init__.py": "src/__init__.py", "src/models.py": "src/models.py",
     "src/inference.py": "src/inference.py", "src/solver.py": "src/solver.py",
     "model/fno_s1.pt": "model/fno_s1.pt", "model/ood_stats.json": "model/ood_stats.json",
-    "model/model_card.json": "model/model_card.json",
+    "model/model_card.json": "model/model_card.json", "model/preset_errors.json": "model/preset_errors.json",
 }
 EXTRA_DIRS = ["app/static"]                 # added in M5 when it exists
 

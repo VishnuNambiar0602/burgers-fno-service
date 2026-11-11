@@ -21,6 +21,7 @@
     <button type="button" class="btn" data-help="about" title="What this tool is and why it exists">What is this?</button>
     <button type="button" class="btn" data-help="limits" title="Situations where the AI forecast can be wrong">When not to trust it</button>
     <button type="button" class="btn" id="btn-model" title="Technical details of the AI model">Model details</button>
+    <button type="button" class="btn" id="agent-toggle" aria-pressed="false" title="Switch to the machine-readable version of this page, for AI agents and scripts. Switch off to return.">Agent mode</button>
     <span id="api-badge" class="badge" role="status">Server: checking…</span>
     <button type="button" id="theme" class="btn ghost" aria-label="Switch between light and dark theme" title="Light or dark theme">Theme</button>
   </nav>
@@ -94,6 +95,7 @@
         <h2 id="h-nums">3 · Key numbers <button type="button" class="q" data-help="numbers" aria-label="Explain the key numbers" title="Explain the key numbers">?</button></h2>
         <dl id="nums" class="nums"><dt>Press Predict</dt><dd>to see how close the AI is, and how fast.</dd></dl>
         <div class="runrow dl">
+          <button type="button" id="dl-pdf" class="btn small" disabled title="A PDF report of everything on screen, with the full CSV and JSON attached inside it">Download PDF</button>
           <button type="button" id="dl-csv" class="btn small" disabled title="All values as a spreadsheet file">Download CSV</button>
           <button type="button" id="dl-json" class="btn small" disabled title="All values and metadata as JSON">Download JSON</button>
         </div>
@@ -157,7 +159,8 @@
     <li><strong>More ways to set the wave</strong>: build it from sine waves or paste numbers; also the smoothing switch for drawings.</li>
     <li><strong>Predict</strong>: runs the forecast. Nothing on the maps is made up by the page: it only shows what the server sends back.</li>
     <li><strong>Time slider</strong>: moves the “Snapshot” to another moment.</li>
-    <li><strong>Download</strong>: saves all the numbers for your own analysis.</li>
+    <li><strong>Download</strong>: <em>Download PDF</em> saves a report of everything you see (the maps, the plots, the numbers as text) with the complete CSV and JSON attached inside the PDF; CSV and JSON can also be saved on their own.</li>
+    <li><strong>Agent mode</strong>: switches the page into a machine-readable form for AI agents and scripts (and back). The normal page contains none of it.</li>
     <li><strong>Question-mark buttons</strong>: explain each panel. You only see these when you ask.</li>
   </ul></template>
 
@@ -205,7 +208,7 @@
     <li><strong>Difference</strong>: the overall gap between AI and solver across the whole map, as a percentage of the solver's answer (“relative L2 error”). Typical for familiar waves: about 1–3%.</li>
     <li><strong>Speed</strong>: how long the server took. The AI answers in a few milliseconds; the solver takes a fraction of a second to a second. The AI's speed advantage is the reason to use it.</li>
     <li><strong>Mass drift</strong>: the total amount of “stuff” in the wave should stay constant. The solver keeps it constant to rounding error; the AI lets it drift a little, which is one of its known flaws.</li>
-    <li><strong>Download</strong>: CSV (a long table: time, position, AI, solver, gap) or JSON (everything, including the warning information).</li>
+    <li><strong>Download</strong>: PDF (the whole dashboard as a report, with the CSV and JSON attached inside it), CSV (a long table: time, position, AI, solver, gap) or JSON (everything, including the warning information).</li>
   </ul></template>
 
 <template id="help-limits"><h2>When not to trust the AI</h2>

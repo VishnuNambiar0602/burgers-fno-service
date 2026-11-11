@@ -99,6 +99,14 @@ dialog form{display:flex;flex-direction:column;max-height:86vh}
 .mixgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
 .mixgrid fieldset{border:1px solid var(--line);border-radius:8px;padding:4px 10px} .mixgrid .row{margin:.2em 0}
 label.inline{display:flex;gap:8px;align-items:flex-start}
+/* Agent mode (the machine view is only created when the toggle is on) */
+.app.agent .strip,.app.agent .dash{display:none}
+.app.agent .agent-view{grid-row:3;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.agent-view h2{font-size:1.1rem;margin:0 0 4px} .agent-view h3{font-size:.95rem;margin:12px 0 4px}
+.mjson{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;overflow:auto;max-height:320px;font:12px/1.4 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.mtable{border-collapse:collapse;font-size:.8rem} .mtable th,.mtable td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top} .mtable code{font:11px ui-monospace,Consolas,monospace;word-break:break-word}
+.tablewrap{overflow-x:auto} .aform{display:grid;gap:6px;max-width:760px} .aform textarea{font-family:ui-monospace,Consolas,monospace}
+#agent-toggle[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
 [hidden]{display:none !important}
 
 /* ---- shorter windows (laptops with toolbars, Windows scaling 125-150%): same dashboard, tighter spacing, still one screen ---- */

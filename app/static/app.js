@@ -11,6 +11,14 @@
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function card2(k, v, s) { var c = el("div", "card2"); c.appendChild(el("div", "k", k)); c.appendChild(el("div", "v", v)); if (s) c.appendChild(el("div", "s", s)); return c; }
 
+  // ---------- lazy-loaded helpers: the PDF writer and the machine view are fetched only when asked for ----------
+  var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || "", ASSET = SCRIPT_SRC.slice(0, SCRIPT_SRC.lastIndexOf("/") + 1), VQ = SCRIPT_SRC.indexOf("?") >= 0 ? SCRIPT_SRC.slice(SCRIPT_SRC.indexOf("?")) : "", loaded = {};
+  function loadScript(name) {
+    if (!loaded[name]) loaded[name] = new Promise(function (res, rej) { var s = document.createElement("script"); s.src = ASSET + name + VQ; s.onload = res; s.onerror = function () { delete loaded[name]; rej(new Error("could not load " + name)); }; document.head.appendChild(s); });
+    return loaded[name];
+  }
+  function emit() { document.dispatchEvent(new CustomEvent("burgers:state")); }
+
   // ---------- theme ----------
   (function () {
     var r = document.documentElement;
@@ -114,7 +122,7 @@
     var p = BL.PRESETS[key]; setInput(p.make(state.seed), key === "random" ? SHORT[key] + " #" + state.seed : SHORT[key], key);
   }
   function setInput(u, label, kind) {
-    state.input = { u: u, label: label, kind: kind }; updateInputNote(); drawInput(); $("run").disabled = state.busy || state.offline;
+    state.input = { u: u, label: label, kind: kind }; updateInputNote(); drawInput(); $("run").disabled = state.busy || state.offline; emit();
   }
   function updateInputNote() {
     var i = state.input, warn = $("input-warn"), note = $("input-note"); warn.hidden = true; warn.textContent = "";
@@ -198,7 +206,7 @@
   $("strip-why").addEventListener("click", function () { if (!state.why) return; var b = $("why-body"); b.textContent = ""; b.appendChild(state.why()); $("dlg-why").showModal(); });
 
   // ---------- running ----------
-  function setBusy(b) { state.busy = b; $("run").disabled = b || !state.input || state.offline; $("run").setAttribute("aria-busy", b ? "true" : "false"); }
+  function setBusy(b) { state.busy = b; $("run").disabled = b || !state.input || state.offline; $("run").setAttribute("aria-busy", b ? "true" : "false"); emit(); }
   function errMsg(status, data) {
     var d = data && data.detail;
     if (status === 422 && Array.isArray(d) && d.length) return "The server rejected this wave: " + d.map(function (e) { return e.msg; }).join("; ");
@@ -207,9 +215,9 @@
   }
   function clearResults() {
     state.result = null; $("nums").textContent = ""; var a = el("dt", null, "Press Predict"), b = el("dd", null, "to see how close the AI is, and how fast."); $("nums").appendChild(a); $("nums").appendChild(b);
-    ["dl-csv", "dl-json"].forEach(function (i) { $(i).disabled = true; }); $("t-slider").disabled = true; $("t-readout").textContent = "t = 1.00";
+    ["dl-pdf", "dl-csv", "dl-json"].forEach(function (i) { $(i).disabled = true; }); $("t-slider").disabled = true; $("t-readout").textContent = "t = 1.00";
     [["hm-fno", "AI forecast map. Press Predict to fill it."], ["hm-solver", "Classic solver map. Press Predict to fill it."], ["hm-error", "Difference map. Press Predict to fill it."],
-     ["profile-plot", "Snapshot. Press Predict to fill it."], ["err-time-plot", "Gap over time. Press Predict to fill it."]].forEach(function (p) { placeholder($(p[0]), "Press Predict"); $(p[0]).setAttribute("aria-label", p[1]); });
+     ["profile-plot", "Snapshot. Press Predict to fill it."], ["err-time-plot", "Gap over time. Press Predict to fill it."]].forEach(function (p) { placeholder($(p[0]), "Press Predict"); $(p[0]).setAttribute("aria-label", p[1]); }); emit();
   }
   function validate(d) {
     function mat(m) { return Array.isArray(m) && m.length === NT && m.every(function (r) { return Array.isArray(r) && r.length === NX; }); }
@@ -260,8 +268,8 @@
     var nums = $("nums"); nums.textContent = "";
     [["Best answer", (flagged || rel > 0.06) ? "Classic solver" : "AI is fine"], ["Difference", pct + " %"], ["AI took", BL.fmt(d.fno.seconds * 1000, 1) + " ms"], ["Solver took", BL.fmt(d.solver.seconds, 2) + " s"], ["Round trip", BL.fmt(R.rtMs, 0) + " ms"],
      ["Mass drift AI", BL.fmt(d.fno.mass_drift, 4)], ["Mass drift solver", BL.fmt(d.solver.mass_drift, 2)]].forEach(function (p) { nums.appendChild(el("dt", null, p[0])); nums.appendChild(el("dd", null, p[1])); });
-    ["dl-csv", "dl-json"].forEach(function (i) { $(i).disabled = false; }); $("t-slider").disabled = false;
-    requestAnimationFrame(drawResultPlots);
+    ["dl-pdf", "dl-csv", "dl-json"].forEach(function (i) { $(i).disabled = false; }); $("t-slider").disabled = false;
+    requestAnimationFrame(drawResultPlots); emit();
   }
   function drawResultPlots() {
     var R = state.result; if (!R) return;
@@ -292,6 +300,25 @@
   function download(name, text, type) { var a = el("a"), url = URL.createObjectURL(new Blob([text], { type: type })); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
   $("dl-json").addEventListener("click", function () { var R = state.result; if (!R) return; var d = R.resp; download("burgers_result.json", JSON.stringify({ created: R.at.toISOString(), input_label: R.label, u0: Array.from(R.u0), x: d.x, t: d.t, fno_u: d.fno.u, solver_u: d.solver.u, ood: d.ood, model: d.model, equation: d.equation, fno_vs_solver_relL2: d.solver.rel_l2_fno_vs_solver_whole }), "application/json"); });
   $("dl-csv").addEventListener("click", function () { var R = state.result; if (!R) return; download("burgers_result.csv", BL.csvFromResponse(R.resp, R.fno, R.solver), "text/csv"); });
+
+  $("dl-pdf").addEventListener("click", async function () {
+    var b = this, label = b.textContent; if (!state.result) return;
+    b.disabled = true; b.textContent = "Making PDF…";
+    try { await loadScript("pdf.js"); await window.BurgersPdf.download(window.__burgers); }
+    catch (e) { setStrip("warn", "Could not make the PDF: " + e.message); }
+    finally { b.textContent = label; b.disabled = !state.result; }
+  });
+
+  // ---------- agent mode: the machine-readable version of the page, created only while the toggle is on ----------
+  async function setAgent(on) {
+    var b = $("agent-toggle");
+    try {
+      if (on) { await loadScript("agent.js"); await window.BurgersAgent.enable(window.__burgers); } else if (window.BurgersAgent) window.BurgersAgent.disable();
+      b.setAttribute("aria-pressed", on ? "true" : "false"); b.textContent = on ? "Agent mode: on" : "Agent mode"; document.querySelector(".app").classList.toggle("agent", on);
+      try { var u = new URL(location.href); if (on) u.searchParams.set("mode", "agent"); else u.searchParams.delete("mode"); history.replaceState(null, "", u); } catch (e) { /* file:// */ }
+    } catch (e) { setStrip("warn", "Could not switch the view: " + e.message); }
+  }
+  $("agent-toggle").addEventListener("click", function () { setAgent($("agent-toggle").getAttribute("aria-pressed") !== "true"); });
 
   // ---------- model info + health ----------
   function showOffline(why) {
@@ -335,9 +362,11 @@
     var q = new URLSearchParams(location.search);
     if (q.get("theme") === "light" || q.get("theme") === "dark") document.documentElement.setAttribute("data-theme", q.get("theme"));
     if (q.get("seed")) state.seed = parseInt(q.get("seed"), 10) || 1;
+    window.__burgers = { state: state, redrawAll: redrawAll, BL: BL };
     buildPresets(); buildMix();
     var key = q.get("preset") && BL.PRESETS[q.get("preset")] ? q.get("preset") : "sine";
     clearResults(); choosePreset(key, false); loadMeta();
+    if (q.get("mode") === "agent") setAgent(true);
     if (q.get("run") === "1") run();
   })();
 })();

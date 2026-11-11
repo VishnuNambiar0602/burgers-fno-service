@@ -147,6 +147,7 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 | WCAG AA contrast of the colour tokens (computed) | Colour-blind simulation of the heatmaps |
 | Docker image builds and runs locally (319 MB, 183 MiB memory in use) | `deploy/Dockerfile.render` and `render.yaml` (not built or tested) |
 | 38 automated tests | Bitwise reproducibility across GPUs |
+| (see section 8b) | MCP endpoint, Agent mode toggle, PDF report: written and syntax-checked only; tests exist but have not been run |
 
 ## 7. Speed and memory (this laptop: i7-13650HX, RTX 4050 Laptop 6 GB, 15.6 GB RAM)
 
@@ -167,6 +168,18 @@ GET  /model-info    GET /health    GET /api
 
 `/predict` returns `x`, `t`, `fno.u` (201 x nx), optionally `solver.u`, `ood` (`is_ood`, `reasons`, features), and model identification
 (weights sha256). Inputs must be finite, |u0| <= 100, length 256 or 512; otherwise HTTP 422.
+
+## 8b. For agents, and the PDF report (added 11 Nov; written and syntax-checked only, NOT yet run)
+
+- **Agent mode.** The header button *Agent mode* (or `/?mode=agent`) turns the dashboard into a machine-readable view: the manifest and the live state as JSON data blocks, the tool list with JSON Schemas,
+  endpoint examples, and a form that calls the MCP endpoint. Nothing machine-oriented exists in the normal page: the code (`app/static/agent.js`) is fetched only when the mode is switched on and everything it adds is removed when it is switched off.
+- **MCP server** at `POST /mcp` (Model Context Protocol, Streamable HTTP, JSON-RPC 2.0, JSON responses, no sessions, no SDK; `app/mcp.py`). Tools (all read-only): `list_presets`, `make_wave`, `predict`, `get_profile`, `get_model_info`, `get_status`, `explain`;
+  resources `burgers://model-card`, `burgers://limitations`, `burgers://guide`. `predict` returns a **verdict** (`good` / `warn` / `bad` / `unchecked` and `best_answer`: `ai` or `solver`), the warnings, timings, small profiles and a `run_id`; `GET /runs/{run_id}.csv` returns every number.
+  Browser origins other than localhost are rejected (DNS-rebinding defence). Machine manifest: `GET /agent.json`. Example client entry: `{"mcpServers": {"burgers": {"url": "http://127.0.0.1:8000/mcp"}}}`
+  (for Claude Code: `claude mcp add --transport http burgers http://127.0.0.1:8000/mcp`; not tried with a real client yet).
+- **Download PDF.** Builds, in the browser and without a library, a PDF of the dashboard as seen (page 1, redrawn in a light print palette), then the numbers as searchable text (key numbers, warnings, the 256 input values, snapshots at five times),
+  with the **complete CSV and JSON attached inside the PDF** (open the viewer's attachments panel). Text pages use plain ASCII (the PDF base fonts have no Greek letters); page 1 keeps the symbols.
+- **Status.** Tests were written (`tests/test_mcp.py`, `tests/test_agent_features.py`, `node scripts/ui_check.mjs <url> <dir> features`) but **have not been run** at the user's request; the PDF writer and the MCP endpoint are unverified until they pass and the PDF is opened in a real viewer.
 
 ## 9. Setup (Windows, Python 3.13) and reproduction
 

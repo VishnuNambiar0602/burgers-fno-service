@@ -62,6 +62,32 @@ try {
       const f = await fit(); check(`matrix_${name}_${w}x${h}@${d}`, /^strip (good|warn)\|/.test(s), { fits: fitOk(f), ...f });
       await shot(`ui_matrix_${name}.png`);
     }
+  } else if (scenario === "features") {
+    // Agent mode: nothing machine-oriented exists until the toggle is on, and everything is removed when it is off again
+    await open(base + "/", 1366, 768, false, "light");
+    const dom0 = await ev("document.documentElement.outerHTML");
+    check("agent_default_page_has_no_machine_content", !/agent-manifest|agent-state|\/mcp|data-agent/.test(dom0) && !(await ev("!!document.getElementById('agent-view')")));
+    check("agent_toggle_off_by_default", await ev("document.getElementById('agent-toggle').getAttribute('aria-pressed')==='false'"));
+    await ev("document.getElementById('agent-toggle').click()"); await sleep(1500);
+    check("agent_mode_creates_machine_view", await ev("!!document.getElementById('agent-view') && document.querySelector('.app').classList.contains('agent') && document.getElementById('agent-toggle').getAttribute('aria-pressed')==='true'"));
+    check("agent_view_has_manifest_and_state_json", await ev("(function(){var m=JSON.parse(document.getElementById('agent-manifest').textContent),s=JSON.parse(document.getElementById('agent-state').textContent);return m.interfaces.mcp.tools.length>=7 && s.mode==='agent' && !!s.input && s.input.u0.length===256})()"));
+    check("agent_mode_hides_human_dashboard", await ev("getComputedStyle(document.querySelector('.dash')).display==='none'"));
+    await shot("ui_agent_mode.png");
+    await ev("document.getElementById('agent-args').value='{\"preset\":\"sine\"}'; document.getElementById('agent-call').click()"); await sleep(2500);
+    const aout = await ev("document.getElementById('agent-out').textContent");
+    check("agent_form_calls_mcp_predict", /"run_id"/.test(aout) && /"verdict"/.test(aout), aout.slice(0, 200));
+    await ev("document.getElementById('agent-toggle').click()"); await sleep(500);
+    const dom1 = await ev("document.documentElement.outerHTML");
+    check("agent_mode_off_removes_machine_content", !/agent-manifest|agent-state|data-agent-view/.test(dom1) && !(await ev("!!document.getElementById('agent-view')")) && (await ev("getComputedStyle(document.querySelector('.dash')).display==='grid'")));
+    await open(base + "/?mode=agent", 1366, 768, false, "light"); await sleep(1500);
+    check("agent_mode_from_url", await ev("!!document.getElementById('agent-view')"));
+    // PDF report: starts with a result, builds a PDF with the picture, text pages and two attachments
+    await open(base + "/?preset=bump&run=1", 1366, 768, false, "light"); await waitDone(); await sleep(400);
+    check("pdf_button_enabled_after_result", await ev("document.getElementById('dl-pdf').disabled===false"));
+    await ev("window.__blobs=[];var o=URL.createObjectURL;URL.createObjectURL=function(b){window.__blobs.push(b);return o.call(URL,b)};document.getElementById('dl-pdf').click();0");
+    for (let i = 0; i < 40 && !(await ev("window.__blobs.length>0")); i++) await sleep(500);
+    const pdf = await ev("window.__blobs[0] ? window.__blobs[0].arrayBuffer().then(function(b){var u=new Uint8Array(b),t=new TextDecoder('latin1').decode(u);return {size:u.length,head:t.slice(0,8),eof:t.slice(-6).trim(),emb:t.split('/Type /EmbeddedFile').length-1,pages:t.split('/Type /Page ').length-1,jpeg:t.indexOf('DCTDecode')>=0,names:t.indexOf('burgers_result.csv')>=0&&t.indexOf('burgers_result.json')>=0,info:window.__lastPdf}}) : null");
+    check("pdf_has_picture_text_pages_and_two_attachments", pdf && /^%PDF-1\.7/.test(pdf.head) && pdf.eof === "%%EOF" && pdf.emb === 2 && pdf.pages >= 3 && pdf.jpeg && pdf.names, pdf);
   } else if (scenario === "offline") {
     // the page opened WITHOUT the API behind it (file:// or an editor preview): it must still be styled and must say what is wrong
     await open(base, 1366, 768, false, "light"); await sleep(1500);

@@ -43,3 +43,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-11 09:58 IST: UI rebuilt as a single-screen dashboard with explanations in dialogs; 33 tests and 47/47 browser checks pass. Local server on 127.0.0.1:8000 serves it.
 - 2026-11-11 10:15 IST: Self-check added to /predict and the page (54 percent of bad cases caught, 0.3 percent false alarms). Tests deliberately not re-run at the user request; 2 failures from the last run are unresolved or unconfirmed (see WORKLOG).
 - 2026-11-11 10:30 IST: M7 recorded as a deferred PLAN (docs/M7_plan.md) at the user's request: local flux-form time-stepper with rollout training on broad solver-generated data; success criteria fixed in advance. Not started. Tests are not being run until the user says so.
+- 2026-11-11 10:46 IST: Added PDF report, MCP server (/mcp, /agent.json) and the Agent-mode toggle. Syntax/import checks only; tests written but not run (user's instruction).
