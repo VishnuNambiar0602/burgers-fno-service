@@ -239,20 +239,26 @@
   function para(text) { return el("p", null, text); }
   function renderResults() {
     var R = state.result, d = R.resp, rel = d.solver.rel_l2_fno_vs_solver_whole, pct = (100 * rel).toFixed(1);
+    var sc = d.self_check, scFlag = !!(sc && sc.flagged), flagged = d.ood.is_ood || scFlag;
     if (d.ood.is_ood) {
       setStrip("bad", "Unfamiliar starting wave: do not trust the AI forecast here. The classic solver is still reliable.", function () {
         var w = el("div"); w.appendChild(para("The AI was trained on a particular family of waves. This one is outside it, so the AI's answer may be wrong without looking wrong:"));
         var ul = el("ul"); d.ood.reasons.forEach(function (r) { ul.appendChild(el("li", null, r)); }); w.appendChild(ul);
         w.appendChild(para("In this run the AI and the solver differ by " + pct + "%. Compare the two maps and believe the solver.")); return w; });
+    } else if (scFlag) {
+      setStrip("bad", "The AI's forecast fails its own sanity checks, so it is probably wrong here. Use the classic solver's answer.", function () {
+        var w = el("div"); w.appendChild(para("After every forecast the page runs three quick checks on the AI's own answer, without needing the solver: does it reproduce the wave you gave it, does it keep the total amount of “stuff” constant, and does it obey the equation? This forecast failed:"));
+        var ul = el("ul"); sc.reasons.forEach(function (r) { ul.appendChild(el("li", null, r.charAt(0).toUpperCase() + r.slice(1) + ".")); }); w.appendChild(ul);
+        w.appendChild(para("In this run the AI and the solver differ by " + pct + "%. In our tests these checks caught about half of the cases where the AI was more than 6% off, with very few false alarms. They can miss problems, so keep comparing with the solver.")); return w; });
     } else if (rel > 0.06) {
       setStrip("warn", "The AI and the solver disagree by " + pct + "%. Treat the AI forecast with caution.", function () {
-        var w = el("div"); w.appendChild(para("No warning was raised about the starting wave, but the AI's forecast differs from the solver's by " + pct + "% over the whole map. For waves like its training data this is typically 1–3%."));
+        var w = el("div"); w.appendChild(para("No warning was raised about the starting wave and the AI's forecast passed its own sanity checks, but it differs from the solver's by " + pct + "% over the whole map. For waves like its training data this is typically 1–3%."));
         w.appendChild(para("Hand-drawn waves, square waves and very sharp fronts often cause this. The solver is the reference: believe it over the AI.")); return w; });
     } else {
       setStrip("good", "The AI matches the classic solver within " + pct + "%. No warning was raised. (That is not a guarantee for every wave.)");
     }
     var nums = $("nums"); nums.textContent = "";
-    [["Difference", pct + " %"], ["AI took", BL.fmt(d.fno.seconds * 1000, 1) + " ms"], ["Solver took", BL.fmt(d.solver.seconds, 2) + " s"], ["Round trip", BL.fmt(R.rtMs, 0) + " ms"],
+    [["Best answer", (flagged || rel > 0.06) ? "Classic solver" : "AI is fine"], ["Difference", pct + " %"], ["AI took", BL.fmt(d.fno.seconds * 1000, 1) + " ms"], ["Solver took", BL.fmt(d.solver.seconds, 2) + " s"], ["Round trip", BL.fmt(R.rtMs, 0) + " ms"],
      ["Mass drift AI", BL.fmt(d.fno.mass_drift, 4)], ["Mass drift solver", BL.fmt(d.solver.mass_drift, 2)]].forEach(function (p) { nums.appendChild(el("dt", null, p[0])); nums.appendChild(el("dd", null, p[1])); });
     ["dl-csv", "dl-json"].forEach(function (i) { $(i).disabled = false; }); $("t-slider").disabled = false;
     requestAnimationFrame(drawResultPlots);

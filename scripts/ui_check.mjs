@@ -118,6 +118,13 @@ try {
     await ev("document.querySelector('button.pre[data-key=two]').click()"); await sleep(200); await ev("document.getElementById('run').click()");
     const sTwo = await waitDone(); check("harder_wave_shows_disagreement_warning", /^strip warn\|The AI and the solver disagree by/.test(sTwo), sTwo);
     check("disagreement_has_why_button", await ev("!document.getElementById('strip-why').hidden"));
+    // the AI's own sanity checks catch a square wave even though the starting wave itself looks fine
+    await ev("document.querySelector('button.pre[data-key=square]').click()"); await sleep(200); await ev("document.getElementById('run').click()");
+    const sSq = await waitDone(); check("square_wave_fails_ai_self_check", /^strip bad\|The AI's forecast fails its own sanity checks/.test(sSq), sSq);
+    await ev("document.getElementById('strip-why').click()"); await sleep(300);
+    check("self_check_why_dialog_lists_reason", await ev("document.getElementById('dlg-why').open && /reproduce the starting wave|conserve the total|satisfy the equation/.test(document.getElementById('why-body').textContent)"), await ev("document.getElementById('why-body').textContent.slice(0,200)"));
+    await key("Escape"); await sleep(200);
+    check("best_answer_row_says_solver", await ev("/Best answer\s*Classic solver/.test(document.getElementById('nums').textContent)"), await ev("document.getElementById('nums').textContent"));
     // ---- 3. explanations exist only when asked for
     const txt0 = await ev("document.body.innerText");
     check("explanations_hidden_until_clicked", txt0.indexOf("What each control does") < 0 && txt0.indexOf("Why ν/π and not just ν") < 0 && txt0.indexOf("Mass drift: the total amount") < 0 && txt0.indexOf("When not to trust") >= 0 /* only the button label */);

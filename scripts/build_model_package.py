@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from src.inference import ood_features, HF_K, ALLOWED_NX, NT, DT  # noqa: E402
+from src.inference import ood_features, HF_K, ALLOWED_NX, NT, DT, load_model, predict, self_check_signals  # noqa: E402
 from src.models import n_params, FNO1d  # noqa: E402
 
 SRC = "checkpoints/fno_s1/best.pt"
@@ -22,7 +22,8 @@ cfg = {"nt": 201, "modes": c["modes"], "width": c["width"], "layers": c["layers"
 meta = {"name": "fno_s1", "seed": c["seed"], "source_checkpoint": SRC, "epoch": ck["epoch"],
         "val_relL2_whole_traj": ck["val_relL2"], "torch_trained_with": str(torch.__version__)}
 os.makedirs("model", exist_ok=True)
-torch.save({"state_dict": ck["model"], "config": cfg, "meta": meta}, "model/fno_s1.pt")
+if "--stats-only" not in sys.argv:                       # --stats-only: recompute thresholds/card without re-saving the weights
+    torch.save({"state_dict": ck["model"], "config": cfg, "meta": meta}, "model/fno_s1.pt")
 sha = hashlib.sha256(open("model/fno_s1.pt", "rb").read()).hexdigest()
 
 # ---- OOD statistics from the 4000 TRAINING initial conditions only
@@ -33,6 +34,13 @@ rng = lambda k: {"min": float(min(f[k] for f in feats)), "max": float(max(f[k] f
 stats = {"computed_on": "data/processed/train.npy initial conditions (n=4000, 256 points)", "hf_wavenumber_cutoff": HF_K,
          "train_range": {"max_abs": rng("max_abs"), "hf_energy_frac": rng("hf_energy_frac"),
                          "abs_mean": {"max": float(max(abs(f["mean"]) for f in feats))}}}
+# self-check thresholds: 99th percentile of each signal over the 500 VALIDATION inputs (about 1% false alarms by construction)
+_m, _ = load_model("model/fno_s1.pt")
+_va = np.load("data/processed/val.npy", mmap_mode="r")[:, 0, :].astype(np.float64)
+_pr = predict(_m, _va).astype(np.float64)
+_sig = [self_check_signals(a, b) for a, b in zip(_va, _pr)]
+stats["self_check"] = {"computed_on": "validation initial conditions (n=500), FNO seed 1 output",
+                       "thresholds": {k: float(np.quantile([s[k] for s in _sig], 0.99)) for k in ("t0", "mass", "resid")}}
 json.dump(stats, open("model/ood_stats.json", "w"), indent=1)
 
 # ---- model card, numbers read from the evaluation reports

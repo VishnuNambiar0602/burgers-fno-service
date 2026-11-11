@@ -1,0 +1,30 @@
+validation (stored truth)    n=300  FNO error median 0.020  p90 0.056  max 0.174  | frac error>6%: 8%  | current OOD flag: 0%
+hand-drawn-like (snapped)    n= 60  FNO error median 0.079  p90 0.129  max 0.214  | frac error>6%: 75%  | current OOD flag: 0%
+random sine mixes            n= 40  FNO error median 0.067  p90 0.164  max 0.301  | frac error>6%: 52%  | current OOD flag: 0%
+two waves / square / bump    n=  3  FNO error median 0.110  p90 0.111  max 0.111  | frac error>6%: 67%  | current OOD flag: 0%
+too tall / noise / wiggly    n=  5  FNO error median 0.629  p90 1.366  max 1.540  | frac error>6%: 100%  | current OOD flag: 100%
+
+pooled n=408, bad (error>6%) = 24%.  AUC = chance a bad case scores higher than a good one (0.5 = useless, 1 = perfect)
+  mass   AUC 0.92 | threshold (val p99) 0.0354 -> flags 7% of bad cases, 0.0% of good ones
+  t0     AUC 0.98 | threshold (val p99) 0.0441 -> flags 67% of bad cases, 1.0% of good ones
+  resid  AUC 0.90 | threshold (val p99) 0.267 -> flags 12% of bad cases, 0.3% of good ones
+  tail   AUC 0.66 | threshold (val p99) 0.000737 -> flags 4% of bad cases, 1.0% of good ones
+  current input-range flag: flags 6% of bad cases, 0.0% of good ones
+  ANY of the four signals (each at its val p99): flags 70% of bad, 2.3% of good;  plus the current flag: 70% / 2.3%
+
+Post-hoc fixes on the FNO output (mean relative L2 error):
+input set                       as is  mass fixed  + t0 anchored
+validation (stored truth)      0.0269      0.0266         0.0271
+hand-drawn-like (snapped)      0.0859      0.0853         0.0863
+random sine mixes              0.0834      0.0827         0.0862
+two waves / square / bump      0.0793      0.0788         0.0837
+too tall / noise / wiggly      0.7115      0.6922         1.0685
+DEPLOYED self-check (validation-p99 thresholds) vs the current input-range flag
+  validation (stored truth)    self-check flags   2% | input-range flag   0% | either   2% | actually bad   8%
+  hand-drawn-like (snapped)    self-check flags  38% | input-range flag   0% | either  38% | actually bad  75%
+  random sine mixes            self-check flags  48% | input-range flag   0% | either  48% | actually bad  52%
+  two waves / square / bump    self-check flags  33% | input-range flag   0% | either  33% | actually bad  67%
+  too tall / noise / wiggly    self-check flags 100% | input-range flag 100% | either 100% | actually bad 100%
+  pooled: bad cases caught: self-check 54%, input-range 6%, either 54%;  good cases wrongly flagged: self-check 0.3%, either 0.3%;  precision of 'either': 98%
+  two waves / square / bump: self-check flags [False, True, False], errors [0.111, 0.11, 0.017]
+  too tall / noise / wiggly: self-check flags [True, True, True, True, True], errors [1.105, 0.629, 1.54, 0.161, 0.123]

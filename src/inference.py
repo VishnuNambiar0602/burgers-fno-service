@@ -69,3 +69,36 @@ def ood_check(u0, stats):
 def load_json(path):
     with open(path) as fh:
         return json.load(fh)
+
+
+def self_check_signals(u0, u):
+    """Three cheap sanity signals of ONE prediction, computed from the network's output alone (no solver):
+      t0    relative error between frame 0 of the output and the input wave (it should reproduce its input)
+      mass  max_t |M(t) - M(0)| / max(mean|u0|, 0.05)   (the equation conserves M = sum(u) dx exactly)
+      resid relative PDE residual of the output (finite differences), size of the residual vs size of the terms
+    """
+    u0 = np.asarray(u0, dtype=np.float64)
+    u = np.asarray(u, dtype=np.float64)
+    nx = u.shape[-1]
+    dx = 1.0 / nx
+    mass = np.abs(u.sum(-1) * dx - u0.sum() * dx).max() / max(np.abs(u0).mean(), 0.05)
+    t0 = np.sqrt(((u[0] - u0) ** 2).sum() / (u0 ** 2).sum())
+    ut = (u[2:] - u[:-2]) / (2 * DT)
+    um = u[1:-1]
+    fx = (np.roll(um ** 2 / 2, -1, -1) - np.roll(um ** 2 / 2, 1, -1)) / (2 * dx)
+    uxx = NU_EFF * (np.roll(um, -1, -1) - 2 * um + np.roll(um, 1, -1)) / dx ** 2
+    R = ut + fx - uxx
+    resid = np.sqrt((R ** 2).sum()) / (np.sqrt((ut ** 2).sum()) + np.sqrt((fx ** 2).sum()) + np.sqrt((uxx ** 2).sum()) + 1e-9)
+    return {"t0": float(t0), "mass": float(mass), "resid": float(resid)}
+
+
+def self_check(u0, u, stats):
+    """Flag a prediction that fails basic sanity checks. Thresholds are validation-set 99th percentiles (stats['self_check']).
+    A flag means the forecast is probably wrong; no flag does NOT certify it (about 30% of bad cases pass in our tests)."""
+    sig = self_check_signals(u0, u)
+    th = stats["self_check"]["thresholds"]
+    why = {"t0": "the forecast does not even reproduce the starting wave you gave it (frame 0 is off by {v:.1%}; typical {t:.1%} or less)",
+           "mass": "the forecast does not conserve the total amount of 'stuff' as the equation requires (drift score {v:.3g}; typical {t:.3g} or less)",
+           "resid": "the forecast does not satisfy the equation itself (residual score {v:.3g}; typical {t:.3g} or less)"}
+    reasons = [why[k].format(v=sig[k], t=th[k]) for k in ("t0", "mass", "resid") if sig[k] > th[k]]
+    return {"flagged": bool(reasons), "reasons": reasons, "signals": sig}

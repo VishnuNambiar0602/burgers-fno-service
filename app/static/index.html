@@ -201,6 +201,7 @@
 
 <template id="help-numbers"><h2>Key numbers</h2>
   <ul>
+    <li><strong>Best answer</strong>: tells you which result to use. “Classic solver” appears whenever a warning was raised or the two disagree by more than 6%.</li>
     <li><strong>Difference</strong>: the overall gap between AI and solver across the whole map, as a percentage of the solver's answer (“relative L2 error”). Typical for familiar waves: about 1–3%.</li>
     <li><strong>Speed</strong>: how long the server took. The AI answers in a few milliseconds; the solver takes a fraction of a second to a second. The AI's speed advantage is the reason to use it.</li>
     <li><strong>Mass drift</strong>: the total amount of “stuff” in the wave should stay constant. The solver keeps it constant to rounding error; the AI lets it drift a little, which is one of its known flaws.</li>
@@ -213,7 +214,7 @@
     <li><strong>It does not copy its own input perfectly.</strong> At time 0 the AI's answer is off by about 1.6%, so the first frame is not exact.</li>
     <li><strong>It does not conserve mass.</strong> The total drifts roughly 100× more than in the reference data. The classic solver does not have this problem.</li>
     <li><strong>One physics setting only.</strong> It was trained for viscosity ν = 0.01 and smooth random mixtures of sine waves, on 256 points. Anything else is untested.</li>
-    <li><strong>The warning is not a guarantee.</strong> Very tall, noisy or very wiggly starting waves trigger a red warning. Milder problems (a square wave, many hand-drawn curves) can be wrong without any warning. That is why the solver is always shown next to the AI: if they disagree, believe the solver.</li>
+    <li><strong>The warnings are not a guarantee.</strong> Very tall, noisy or very wiggly starting waves trigger a red warning. The page also checks the AI's own forecast (does it reproduce your starting wave, conserve the total, obey the equation?); in our tests that caught about half of the cases where the AI was more than 6% off, with 0.3% false alarms. The rest can still be wrong without any warning, which is why the solver is always shown next to the AI: if they disagree, believe the solver.</li>
     <li><strong>It is an approximation, not a proof.</strong> The classic solver is the reference; the AI is just much faster.</li>
   </ul></template>
 

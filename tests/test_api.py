@@ -109,3 +109,20 @@ def test_unknown_route_404(client):
 def test_api_root_lists_endpoints(client):
     j = client.get("/api").json()
     assert j["service"] == "burgers-fno-service" and "POST /predict" in j["endpoints"]
+
+
+def test_self_check_is_returned_and_rarely_fires_on_in_distribution_inputs(client):
+    flags = []
+    for i in range(100):
+        j = client.post("/predict", json={"u0": np.asarray(VAL[i, 0], dtype=float).tolist()}).json()
+        assert set(j["self_check"]) == {"flagged", "reasons", "signals"} and set(j["self_check"]["signals"]) == {"t0", "mass", "resid"}
+        flags.append(j["self_check"]["flagged"])
+    assert np.mean(flags) <= 0.06, np.mean(flags)           # thresholds are validation 99th percentiles
+
+
+def test_self_check_flags_a_square_wave_and_noise_with_reasons(client):
+    x = (np.arange(256) + 0.5) / 256
+    sq = client.post("/predict", json={"u0": np.where((x > .25) & (x < .75), 1.0, -1.0).tolist()}).json()["self_check"]
+    assert sq["flagged"] and sq["reasons"]
+    nz = client.post("/predict", json={"u0": (0.3 * np.random.default_rng(0).standard_normal(256)).tolist()}).json()
+    assert nz["self_check"]["flagged"] and nz["ood"]["is_ood"]

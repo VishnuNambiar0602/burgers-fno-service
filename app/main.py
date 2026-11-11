@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field, field_validator
 
-from src.inference import ALLOWED_NX, DT, NT, NU_EFF, load_json, load_model, ood_check, predict
+from src.inference import ALLOWED_NX, DT, NT, NU_EFF, load_json, load_model, ood_check, predict, self_check
 from src.solver import mass, solve
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -145,6 +145,7 @@ def predict_endpoint(req: PredictRequest):
         "x": _round((np.arange(nx) + 0.5) / nx), "t": _round(t),
         "fno": {"u": _round(u), "seconds": fno_ms / 1000, "mass_drift": float(np.abs(mass(u.astype(np.float64)) - mass(u0[None])[0]).max())},
         "ood": ood_check(u0, app.state.stats),
+        "self_check": self_check(u0, u, app.state.stats),
         "model": {"name": app.state.card["name"], "sha256_12": app.state.sha[:12], "trained_at_nx": 256, "input_nx": nx},
         "equation": app.state.card["equation"],
     }

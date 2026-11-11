@@ -76,7 +76,7 @@ def test_page_states_correct_equation_and_fixed_settings():
     assert "(ν/π)" in html and "ν = 0.01 (fixed)" in html and "256 grid points" in html
     assert "Why ν/π and not just ν?" in html                                   # explained in the equation dialog
     for must in ["Sharp fronts (shocks)", "does not copy its own input", "does not conserve mass", "One physics setting only", "CC BY 4.0",
-                 "The warning is not a guarantee"]:
+                 "The warnings are not a guarantee"]:
         assert must in html, must
 
 

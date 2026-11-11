@@ -15,5 +15,13 @@
   "abs_mean": {
    "max": 2.4086609785445035
   }
+ },
+ "self_check": {
+  "computed_on": "validation initial conditions (n=500), FNO seed 1 output",
+  "thresholds": {
+   "t0": 0.05087563076151508,
+   "mass": 0.03536377588877765,
+   "resid": 0.27051486648835543
+  }
  }
 }
