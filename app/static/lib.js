@@ -31,14 +31,14 @@
   }
 
   var PRESETS = {
-    sine:   { label: "Single sine", note: "u = sin(2πx). Inside the training range.", make: function () { return sineMix([{ amp: 1, k: 1, phase: 0 }], 0); } },
-    two:    { label: "Two sines", note: "0.8·sin(4πx+0.5) + 0.5·sin(10πx+1.2). Inside the training range.", make: function () { return sineMix([{ amp: 0.8, k: 2, phase: 0.5 }, { amp: 0.5, k: 5, phase: 1.2 }], 0); } },
-    bump:   { label: "Gaussian bump", note: "A smooth bump; not a training-style input, but the FNO handled it well in testing.", make: function () { return fromFn(function (x) { return Math.exp(-Math.pow((x - 0.5) / 0.08, 2)); }); } },
-    square: { label: "Square wave", note: "Sudden jumps. Not in the training family: the FNO was about 4x less accurate here in testing, and this input is usually NOT flagged.", make: function () { return fromFn(function (x) { return (x > 0.25 && x < 0.75) ? 1 : -1; }); } },
-    random: { label: "Random smooth mix (re-roll with the button)", note: "Random sines of wavenumber 1-8. Similar in spirit to, but not identical to, the training family.", make: function (seed) { return randomMix(seed); } },
-    tall:   { label: "Too tall (out-of-distribution demo)", note: "5·sin(2πx): larger than anything in training (max 3.35). Should raise the warning.", make: function () { return sineMix([{ amp: 5, k: 1, phase: 0 }], 0); } },
-    noise:  { label: "Random noise (out-of-distribution demo)", note: "White noise: should raise the warning and the answer will be wrong.", make: function (seed) { var r = mulberry32(seed || 7); return fromFn(function () { var a = r() || 1e-9, b = r(); return 0.3 * Math.sqrt(-2 * Math.log(a)) * Math.cos(2 * Math.PI * b); }); } },
-    wiggly: { label: "Very wiggly sine, 40 waves (out-of-distribution demo)", note: "sin(80πx): far higher frequency than training. Should raise the warning.", make: function () { return sineMix([{ amp: 1, k: 40, phase: 0 }], 0); } }
+    sine:   { label: "Single sine", note: "One gentle wave. In testing the AI and the solver differed by about 2.7%.", make: function () { return sineMix([{ amp: 1, k: 1, phase: 0 }], 0); } },
+    two:    { label: "Two sines", note: "Two waves of different speeds, which makes sharper fronts. In testing the AI and solver differed by about 11%, and no warning is raised for this wave.", make: function () { return sineMix([{ amp: 0.8, k: 2, phase: 0.5 }, { amp: 0.5, k: 5, phase: 1.2 }], 0); } },
+    bump:   { label: "Gaussian bump", note: "One smooth bump. In testing the AI and solver differed by about 1.7%.", make: function () { return fromFn(function (x) { return Math.exp(-Math.pow((x - 0.5) / 0.08, 2)); }); } },
+    square: { label: "Square wave", note: "Sudden jumps. In testing the AI and solver differed by about 11%, and no warning is raised for this wave.", make: function () { return fromFn(function (x) { return (x > 0.25 && x < 0.75) ? 1 : -1; }); } },
+    random: { label: "Random smooth mix (re-roll with the button)", note: "A random mix of 1 to 3 waves; click again for a new one. In testing (40 trials) the typical difference was about 5% and up to about 25%; no warning is raised.", make: function (seed) { return randomMix(seed); } },
+    tall:   { label: "Too tall (out-of-distribution demo)", note: "Five times as tall as a basic wave: higher than anything in training. Raises a warning; in testing the AI was off by about 110%.", make: function () { return sineMix([{ amp: 5, k: 1, phase: 0 }], 0); } },
+    noise:  { label: "Random noise (out-of-distribution demo)", note: "Random jitter. Raises a warning; in testing the AI was off by about 70%.", make: function (seed) { var r = mulberry32(seed || 7); return fromFn(function () { var a = r() || 1e-9, b = r(); return 0.3 * Math.sqrt(-2 * Math.log(a)) * Math.cos(2 * Math.PI * b); }); } },
+    wiggly: { label: "Very wiggly sine, 40 waves (out-of-distribution demo)", note: "40 tight oscillations, far finer than the training waves. Raises a warning; in testing the AI was off by about 150%.", make: function () { return sineMix([{ amp: 1, k: 40, phase: 0 }], 0); } }
   };
 
   function randomMix(seed) {

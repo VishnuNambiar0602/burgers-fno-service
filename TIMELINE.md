@@ -39,3 +39,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-10 08:41 IST: deploy_hf.py run (user pre-authorised): HF 402 Payment Required for Docker Space on free tier. M4 BLOCKED (external). See WORKLOG.md.
 - 2026-11-10 09:03 IST: M5 (front end) DONE locally: static HTML/JS served by the app, 19/19 real-browser checks, 32 tests pass. M6 README drafted (final live verification blocked with M4). See WORKLOG.md.
 - 2026-11-11 09:25 IST: M4 re-scoped by user to a LOCAL deployment (127.0.0.1:8000, CPU settings). Verified: live_check PASS, 19/19 browser checks. Public live URL still not achieved (HF 402).
+- 2026-11-11 09:58 IST: UI rebuilt as a single-screen dashboard with explanations in dialogs; 33 tests and 47/47 browser checks pass. Local server on 127.0.0.1:8000 serves it.

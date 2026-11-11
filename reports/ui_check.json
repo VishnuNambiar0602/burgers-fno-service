@@ -1,49 +1,157 @@
 {
- "desktop_run_done": {
+ "fits_1920x1080_before_run": {
   "ok": true,
-  "info": "status|Done."
+  "info": {
+   "scrollH": 1080,
+   "innerH": 1080,
+   "scrollW": 1920,
+   "clientW": 1920,
+   "clipped": []
+  }
  },
- "desktop_results_visible": {
+ "run_done_1920x1080": {
+  "ok": true,
+  "info": "strip good|The AI matches the classic solver within 2.7%. No warning was raised. (That is not a guarantee for every wave.)"
+ },
+ "fits_1920x1080_after_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 1080,
+   "innerH": 1080,
+   "scrollW": 1920,
+   "clientW": 1920,
+   "clipped": []
+  }
+ },
+ "fits_1440x900_before_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 900,
+   "innerH": 900,
+   "scrollW": 1440,
+   "clientW": 1440,
+   "clipped": []
+  }
+ },
+ "run_done_1440x900": {
+  "ok": true,
+  "info": "strip good|The AI matches the classic solver within 2.7%. No warning was raised. (That is not a guarantee for every wave.)"
+ },
+ "fits_1440x900_after_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 900,
+   "innerH": 900,
+   "scrollW": 1440,
+   "clientW": 1440,
+   "clipped": []
+  }
+ },
+ "fits_1366x768_before_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 768,
+   "innerH": 768,
+   "scrollW": 1366,
+   "clientW": 1366,
+   "clipped": []
+  }
+ },
+ "run_done_1366x768": {
+  "ok": true,
+  "info": "strip good|The AI matches the classic solver within 2.7%. No warning was raised. (That is not a guarantee for every wave.)"
+ },
+ "fits_1366x768_after_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 768,
+   "innerH": 768,
+   "scrollW": 1366,
+   "clientW": 1366,
+   "clipped": []
+  }
+ },
+ "fits_1280x720_before_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 720,
+   "innerH": 720,
+   "scrollW": 1280,
+   "clientW": 1280,
+   "clipped": []
+  }
+ },
+ "run_done_1280x720": {
+  "ok": true,
+  "info": "strip good|The AI matches the classic solver within 2.7%. No warning was raised. (That is not a guarantee for every wave.)"
+ },
+ "fits_1280x720_after_run": {
+  "ok": true,
+  "info": {
+   "scrollH": 720,
+   "innerH": 720,
+   "scrollW": 1280,
+   "clientW": 1280,
+   "clipped": []
+  }
+ },
+ "presets_visible": {
   "ok": true
  },
- "desktop_ok_banner_no_ood": {
+ "preset_selected_state": {
   "ok": true
  },
- "desktop_canvases_have_content": {
+ "input_note_updates": {
+  "ok": true,
+  "info": "Bump · highest point 1.00. Draw on the plot to replace it."
+ },
+ "preset_tooltips_state_measured_error": {
+  "ok": true
+ },
+ "before_run_no_numbers_and_downloads_disabled": {
+  "ok": true
+ },
+ "before_run_strip_is_idle": {
+  "ok": true
+ },
+ "busy_state_shown_while_running": {
+  "ok": true,
+  "info": "strip busy|Running the AI and the classic solver on the server… about a second."
+ },
+ "run_done_good_strip": {
+  "ok": true,
+  "info": "strip good|The AI matches the classic solver within 1.7%. No warning was raised. (That is not a guarantee for every wave.)"
+ },
+ "all_plots_have_content": {
   "ok": true,
   "info": [
-   681,
-   691,
-   204,
-   89,
-   65,
-   55
+   374,
+   368,
+   263,
+   60,
+   62,
+   25
   ]
  },
- "desktop_round_trip_exceeds_solver_time": {
+ "numbers_from_api_shown": {
+  "ok": true,
+  "info": "Difference1.7 %AI took2.6 msSolver took0.35 sRound trip731 msMass drift AI0.0017Mass drift solver1.11e-14"
+ },
+ "round_trip_at_least_solver_time": {
   "ok": true,
   "info": {
-   "rt": "797 ms",
-   "solver": "0.36 s"
+   "solver": 0.35,
+   "rt": 731
   }
  },
- "desktop_title_and_equation": {
+ "slider_enabled_and_moves_profile": {
   "ok": true
  },
- "desktop_no_horizontal_overflow": {
-  "ok": true,
-  "info": {
-   "scrollW": 1265,
-   "clientW": 1265,
-   "bad": []
-  }
- },
- "download_csv_has_header_and_51457_lines": {
+ "download_csv_51457_lines": {
   "ok": true,
   "info": {
    "n": 51457,
-   "head": "t,x,u_fno,u_solver,abs_error",
-   "row1": "0,0.001953,0.0175,0.012272,0.005228"
+   "head": "t,x,u_fno,u_solver,abs_error"
   }
  },
  "download_json_complete": {
@@ -52,61 +160,159 @@
    "u0": 256,
    "fno": 201,
    "solver": 201,
-   "hasOod": "boolean",
-   "model": "fno_s1"
+   "ood": "boolean"
+  }
+ },
+ "harder_wave_shows_disagreement_warning": {
+  "ok": true,
+  "info": "strip warn|The AI and the solver disagree by 11.1%. Treat the AI forecast with caution."
+ },
+ "disagreement_has_why_button": {
+  "ok": true
+ },
+ "explanations_hidden_until_clicked": {
+  "ok": true
+ },
+ "nine_help_topics_available": {
+  "ok": true,
+  "info": [
+   "guide",
+   "about",
+   "limits",
+   "equation",
+   "input",
+   "maps",
+   "snapshot",
+   "gap",
+   "numbers"
+  ]
+ },
+ "every_help_dialog_opens_closes_with_escape_and_returns_focus": {
+  "ok": true,
+  "info": {
+   "guide": {
+    "open": false,
+    "title": "How to use this page (30 seconds)",
+    "len": 1183,
+    "focusBack": true
+   },
+   "about": {
+    "open": false,
+    "title": "What is this?",
+    "len": 862,
+    "focusBack": true
+   },
+   "limits": {
+    "open": false,
+    "title": "When not to trust the AI",
+    "len": 946,
+    "focusBack": true
+   },
+   "equation": {
+    "open": false,
+    "title": "The equation in plain words",
+    "len": 673,
+    "focusBack": true
+   },
+   "input": {
+    "open": false,
+    "title": "Choosing a starting wave",
+    "len": 1095,
+    "focusBack": true
+   },
+   "maps": {
+    "open": false,
+    "title": "Reading the three maps",
+    "len": 577,
+    "focusBack": true
+   },
+   "snapshot": {
+    "open": false,
+    "title": "Snapshot at one moment",
+    "len": 296,
+    "focusBack": true
+   },
+   "gap": {
+    "open": false,
+    "title": "Gap over time",
+    "len": 328,
+    "focusBack": true
+   },
+   "numbers": {
+    "open": false,
+    "title": "Key numbers",
+    "len": 675,
+    "focusBack": true
+   }
+  }
+ },
+ "model_dialog_shows_numbers_from_api": {
+  "ok": true
+ },
+ "tall_preset_shows_early_warning": {
+  "ok": true
+ },
+ "ood_strip_is_red_and_plain": {
+  "ok": true,
+  "info": "strip bad|Unfamiliar starting wave: do not trust the AI forecast here. The classic solver is still reliable."
+ },
+ "ood_why_button_visible": {
+  "ok": true
+ },
+ "ood_why_dialog_lists_reason": {
+  "ok": true,
+  "info": "The AI was trained on a particular family of waves. This one is outside it, so the AI's answer may be wrong without looking wrong:amplitude max|u0| = 5 exceeds "
+ },
+ "fits_1366x768_with_ood_result": {
+  "ok": true,
+  "info": {
+   "scrollH": 768,
+   "innerH": 768,
+   "scrollW": 1366,
+   "clientW": 1366,
+   "clipped": []
   }
  },
  "keyboard_first_tab_is_skip_link": {
   "ok": true,
   "info": "A.skip"
  },
- "mobile_ood_run_done": {
+ "drawing_replaces_the_wave": {
   "ok": true,
-  "info": "status|Done."
+  "info": "Your drawing, smoothed (changed by 8%). Highest point: 2.33."
  },
- "mobile_ood_banner_shown": {
+ "drawing_deselects_presets": {
   "ok": true
  },
- "mobile_ood_banner_has_reason": {
+ "drawing_shows_caution": {
   "ok": true
+ },
+ "drawing_run_done": {
+  "ok": true,
+  "info": "strip warn|The AI and the solver disagree by 30.5%. Treat the AI forecast with caution."
+ },
+ "advanced_dialog_opens": {
+  "ok": true
+ },
+ "paste_error_shown_in_dialog": {
+  "ok": true
+ },
+ "sine_mix_applies_and_closes_dialog": {
+  "ok": true,
+  "info": "Your sine mix · highest point 1.30. Draw on the plot to replace it."
+ },
+ "mobile_run_done": {
+  "ok": true,
+  "info": "strip bad|Unfamiliar starting wave: do not trust the AI forecast here. The classic solver is still reliable."
  },
  "mobile_no_horizontal_overflow": {
   "ok": true,
   "info": {
+   "scrollH": 2762,
+   "innerH": 800,
    "scrollW": 375,
    "clientW": 375,
-   "bad": []
+   "clipped": []
   }
- },
- "draw_snapped_message": {
-  "ok": true,
-  "info": {
-   "msg": "Snapped: smoothed to at most 8 waves (changed your drawing by 9%).",
-   "events": {
-    "pointerdown": 1,
-    "pointermove": 61,
-    "pointerup": 1
-   },
-   "box": {
-    "x": 31,
-    "y": 278.6875,
-    "w": 923,
-    "h": 346.125
-   }
-  }
- },
- "draw_input_updated": {
-  "ok": true,
-  "info": "Your drawing (snapped): max |u| = 2.23, mean = -0.06. 256 points."
- },
- "draw_run_done": {
-  "ok": true,
-  "info": "status|Done."
- },
- "paste_error_shown": {
-  "ok": true
- },
- "run_disabled_without_valid_input": {
-  "ok": true
  }
 }

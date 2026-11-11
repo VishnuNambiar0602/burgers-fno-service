@@ -118,6 +118,10 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 | white noise | 0.708 | 100% |
 | 40 or 100 waves | about 1.5 (worse than predicting zero) | 100% |
 | hand-drawn-like curves, snapped to <= 8 waves | median 0.078, p90 0.130 | 0% |
+| UI preset "Smooth wave" / "Bump" | 0.027 / 0.017 | 0% |
+| UI preset "Two waves" / "Square" | 0.111 / 0.110 | 0% |
+| UI preset "Random mix" (40 draws) | median 0.053, max 0.246 | 0% |
+| UI stress tests "Too tall" / "Noise" / "Very wiggly" | 1.105 / 0.674 / 1.540 | 100% |
 
 - **Shocks:** error about 3x larger near them (section 4).
 - **t = 0:** the output reproduces its own input to only about 1.6% (relative), i.e. the first frame is not exact.
@@ -138,10 +142,10 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 | Equation convention (nu/pi) against the data | **Published comparison**: no reliable like-for-like numbers found. A garbled table suggested PDEBench FNO nRMSE about 7.8e-3 and U-Net about 0.22 for nu = 0.01, but the labelling is doubtful and the protocols differ (autoregressive, more data, 1024 points). See `reports/published_comparison.md`. **Check the PDEBench appendix yourself before quoting any comparison.** |
 | Test-set errors, 3 seeds, one evaluation | Behaviour at other viscosities or other initial-condition families |
 | API matches the offline checkpoint (max abs difference 7e-7 locally and in Docker) | Latency and memory on a free cloud host (laptop numbers only) |
-| Web page behaviour in a real Chromium browser (Edge, headless): run, OOD banner, 375 px width with no overflow, keyboard skip link, mouse drawing, paste errors, CSV/JSON downloads, error state | Firefox, Safari, touch input, screen readers |
+| Dashboard in a real Chromium browser (Edge, headless, 47 checks): fits **one screen with no scrolling** at 1920x1080, 1440x900, 1366x768 and 1280x720, before and after a run, with no clipped panel; all explanations only inside dialogs (9 help topics open, close with Esc and return focus); run, amber/red warning strip, mouse drawing, advanced dialog, CSV/JSON downloads, error state; 375 px phone width without sideways overflow (it scrolls vertically there) | Firefox, Safari, touch input, screen readers |
 | WCAG AA contrast of the colour tokens (computed) | Colour-blind simulation of the heatmaps |
 | Docker image builds and runs locally (319 MB, 183 MiB memory in use) | `deploy/Dockerfile.render` and `render.yaml` (not built or tested) |
-| 32 automated tests | Bitwise reproducibility across GPUs |
+| 33 automated tests | Bitwise reproducibility across GPUs |
 
 ## 7. Speed and memory (this laptop: i7-13650HX, RTX 4050 Laptop 6 GB, 15.6 GB RAM)
 
@@ -153,7 +157,7 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 
 ## 8. Using it
 
-Web page at `/`, API docs at `/docs`.
+Web page at `/`, API docs at `/docs`. The page is a single-screen dashboard (best on a display of at least 1100x620; smaller screens get a stacked, scrolling layout). Left: the physics, eight ready-made starting waves (five normal, three "try to break it") and a plot you can also draw on. Middle and right: the AI forecast, the classic solver and a difference map, then a snapshot with a time slider, the gap over time, and key numbers with CSV/JSON download. A coloured strip says whether to trust the AI (green: close to the solver; amber: the two disagree by more than 6%; red: the input is outside the training range). All explanations (how to use it, the equation in plain words, how to read the maps, limits, model details) are in dialogs that open only when asked.
 
 ```
 POST /predict   {"u0": [256 numbers (or 512)], "include_solver": true}
@@ -181,7 +185,7 @@ CPU for serving), numpy 2.5.4, h5py 3.16.0, scipy 1.18.1, matplotlib 3.11.2, fas
 pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not hash-locked.
 
 `scripts/evaluate.py` refuses to open the test split without `--final`. `scripts/validate_m2.py`, `scripts/bench_latency.py`,
-`scripts/ood_eval.py`, `scripts/snap_eval.py`, `scripts/ui_check.mjs` reproduce the other reports.
+`scripts/ood_eval.py`, `scripts/snap_eval.py`, `scripts/ui_check.mjs` reproduce the other reports (preset errors: `reports/preset_errors.json`).
 
 ## 10. Deployment
 

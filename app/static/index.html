@@ -3,140 +3,219 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Burgers FNO Solver</title>
-<meta name="description" content="A Fourier Neural Operator predicts the solution of the 1D viscous Burgers equation; compare it with a numerical solver.">
+<title>Burgers Wave Predictor</title>
+<meta name="description" content="Watch a wave evolve: an AI forecast next to a classic numerical solver, on one screen.">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<a class="skip" href="#main">Skip to main content</a>
+<a class="skip" href="#dash">Skip to the dashboard</a>
+<div class="app">
+
 <header class="top">
-  <div class="wrap bar">
-    <h1>Burgers FNO Solver</h1>
-    <div class="bar-right">
-      <span id="api-badge" class="badge" role="status">API: checking…</span>
-      <button type="button" id="theme" class="btn ghost" aria-label="Switch between light and dark theme">Theme</button>
-    </div>
+  <div class="brand">
+    <h1>Burgers Wave Predictor</h1>
+    <p class="tag">Pick a starting wave and see how it evolves: an AI forecast next to a classic solver.</p>
   </div>
+  <nav class="actions" aria-label="Help and settings">
+    <button type="button" class="btn" data-help="guide" title="A 30-second walkthrough of this page">How to use</button>
+    <button type="button" class="btn" data-help="about" title="What this tool is and why it exists">What is this?</button>
+    <button type="button" class="btn" data-help="limits" title="Situations where the AI forecast can be wrong">When not to trust it</button>
+    <button type="button" class="btn" id="btn-model" title="Technical details of the AI model">Model details</button>
+    <span id="api-badge" class="badge" role="status">Server: checking…</span>
+    <button type="button" id="theme" class="btn ghost" aria-label="Switch between light and dark theme" title="Light or dark theme">Theme</button>
+  </nav>
 </header>
 
-<main id="main" class="wrap">
+<div id="strip" class="strip idle" role="status" aria-live="polite">
+  <span id="strip-icon" class="icon" aria-hidden="true">i</span>
+  <span id="strip-text">Pick a starting wave on the left, then press <strong>Predict</strong>.</span>
+  <button type="button" id="strip-why" class="btn small" hidden>Why?</button>
+</div>
 
-<section id="intro" aria-labelledby="h-intro">
-  <h2 id="h-intro">The problem</h2>
-  <p>Pick a starting wave <var>u(x, 0)</var> on a ring-shaped road of length 1. The <strong>viscous Burgers equation</strong> says how it evolves: fast parts catch up with slow parts and steepen into sharp fronts (<em>shocks</em>), while a little viscosity smooths them.</p>
-  <p class="equation" role="math" aria-label="u sub t plus the x derivative of u squared over 2 equals nu over pi times u sub x x">
-    ∂u/∂t + ∂/∂x ( u²/2 ) = (ν/π) · ∂²u/∂x²
-  </p>
-  <p>The factor is <strong>ν/π</strong>, not plain ν. That is the convention used by the PDEBench data this model learned from, and we checked it against the stored solutions.</p>
-  <ul class="chips" aria-label="Fixed settings">
-    <li>ν = 0.01 (fixed)</li><li>256 grid points</li><li>x ∈ [0, 1), periodic</li><li>t from 0 to 2 in 201 steps</li>
-  </ul>
-  <p>A <strong>Fourier Neural Operator (FNO)</strong>, a neural network trained on 4,000 simulations, predicts the whole evolution in one pass. Next to it we run an ordinary <strong>numerical solver</strong> on the server, so you can see where the network is right and where it is not.</p>
-</section>
+<main id="dash" class="dash">
 
-<section id="input" aria-labelledby="h-input">
-  <h2 id="h-input">1. Choose an initial condition</h2>
-  <fieldset class="src">
-    <legend>Where should the starting wave come from?</legend>
-    <label><input type="radio" name="src" value="preset" checked> Preset</label>
-    <label><input type="radio" name="src" value="mix"> Build from sines</label>
-    <label><input type="radio" name="src" value="draw"> Draw it</label>
-    <label><input type="radio" name="src" value="paste"> Paste numbers</label>
-  </fieldset>
+  <div class="left">
+    <section class="card problem" aria-labelledby="h-problem">
+      <h2 id="h-problem">The physics <button type="button" class="q" data-help="equation" aria-label="Explain the equation" title="Explain the equation">?</button></h2>
+      <p class="equation" role="math" aria-label="du by dt plus d by dx of u squared over two equals nu over pi times d squared u by dx squared">∂u/∂t + ∂/∂x(u²/2) = (ν/π)·∂²u/∂x²</p>
+      <ul class="chips" aria-label="Fixed settings">
+        <li>ν = 0.01 (fixed)</li><li>256 grid points</li><li>wraps around at x = 0 and 1</li>
+      </ul>
+    </section>
 
-  <div id="panel-preset" class="panel">
-    <div class="row">
-      <label for="preset">Preset</label>
-      <select id="preset"></select>
-      <button type="button" id="reroll" class="btn" hidden>Re-roll random</button>
+    <section class="card input" aria-labelledby="h-input">
+      <h2 id="h-input">1 · Pick a starting wave <button type="button" class="q" data-help="input" aria-label="Help with choosing a starting wave" title="Help with choosing a starting wave">?</button></h2>
+      <div class="presets" role="group" aria-label="Ready-made starting waves" id="presets"></div>
+      <p class="grp">Try to break it (the AI has not seen these):</p>
+      <div class="presets stress" role="group" aria-label="Stress tests" id="presets-stress"></div>
+      <div class="plotbox input-box">
+        <canvas id="input-plot" role="img" aria-label="Starting wave. You can also draw on this plot with a mouse, pen or finger."></canvas>
+      </div>
+      <p id="input-note" class="note">Tip: draw on the plot above to make your own wave.</p>
+      <p id="input-warn" class="warn small" role="status" hidden></p>
+      <div class="runrow">
+        <button type="button" id="advanced" class="btn" title="Build a wave from sines, or paste numbers">More ways to set the wave…</button>
+        <button type="button" id="run" class="btn primary" title="Run the AI and the classic solver on this wave">Predict</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="right">
+    <div class="row3 top3">
+      <section class="card" aria-labelledby="h-fno">
+        <h2 id="h-fno">2 · AI forecast <button type="button" class="q" data-help="maps" aria-label="How to read the maps" title="How to read the maps">?</button></h2>
+        <div class="plotbox"><canvas id="hm-fno" role="img" aria-label="AI forecast map. Press Predict to fill it."></canvas></div>
+      </section>
+      <section class="card" aria-labelledby="h-solver">
+        <h2 id="h-solver">Classic solver (reference)</h2>
+        <div class="plotbox"><canvas id="hm-solver" role="img" aria-label="Classic solver map. Press Predict to fill it."></canvas></div>
+      </section>
+      <section class="card" aria-labelledby="h-diff">
+        <h2 id="h-diff">Where they differ</h2>
+        <div class="plotbox"><canvas id="hm-error" role="img" aria-label="Difference map. Press Predict to fill it."></canvas></div>
+      </section>
     </div>
-    <p id="preset-note" class="note"></p>
-  </div>
 
-  <div id="panel-mix" class="panel" hidden>
-    <p class="note">u(x) = mean + Σ amplitude · sin(2π · waves · x + phase). Waves is how many full oscillations fit in the domain.</p>
-    <div class="mixgrid" id="mixgrid"></div>
-    <div class="row"><label for="mix-mean">Mean</label><input id="mix-mean" type="number" step="0.1" value="0"></div>
-  </div>
-
-  <div id="panel-draw" class="panel" hidden>
-    <p class="note">Draw one stroke from left to right with a mouse, pen or finger. Drawing needs a pointer; keyboard users can use "Build from sines" or "Paste numbers" instead.</p>
-    <canvas id="draw-canvas" class="plot draw" role="img" aria-label="Drawing area: draw the initial condition as one stroke from left to right. Vertical range minus 3.5 to 3.5."></canvas>
-    <div class="row">
-      <label class="inline"><input type="checkbox" id="snap" checked> Snap to the supported family (smooth it to at most 8 waves; recommended)</label>
-      <button type="button" id="clear-draw" class="btn">Clear drawing</button>
+    <div class="row3 bottom3">
+      <section class="card" aria-labelledby="h-snap">
+        <h2 id="h-snap">Snapshot at one moment <button type="button" class="q" data-help="snapshot" aria-label="Explain the snapshot" title="Explain the snapshot">?</button></h2>
+        <div class="plotbox"><canvas id="profile-plot" role="img" aria-label="Snapshot of the wave at one moment. Press Predict to fill it."></canvas></div>
+        <div class="slider">
+          <label for="t-slider">Time</label>
+          <input id="t-slider" type="range" min="0" max="200" step="1" value="100" disabled>
+          <output id="t-readout" for="t-slider">t = 1.00</output>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="h-gap">
+        <h2 id="h-gap">Gap over time <button type="button" class="q" data-help="gap" aria-label="Explain the gap over time" title="Explain the gap over time">?</button></h2>
+        <div class="plotbox"><canvas id="err-time-plot" role="img" aria-label="How the difference grows with time. Press Predict to fill it."></canvas></div>
+      </section>
+      <section class="card" aria-labelledby="h-nums">
+        <h2 id="h-nums">3 · Key numbers <button type="button" class="q" data-help="numbers" aria-label="Explain the key numbers" title="Explain the key numbers">?</button></h2>
+        <dl id="nums" class="nums"><dt>Press Predict</dt><dd>to see how close the AI is, and how fast.</dd></dl>
+        <div class="runrow dl">
+          <button type="button" id="dl-csv" class="btn small" disabled title="All values as a spreadsheet file">Download CSV</button>
+          <button type="button" id="dl-json" class="btn small" disabled title="All values and metadata as JSON">Download JSON</button>
+        </div>
+      </section>
     </div>
-    <p class="note">Hand-drawn curves are usually harder for the model than its training inputs: in tests with synthetic drawings the FNO and the solver differed by about 6–8% even after snapping (about 2–3% for in-family inputs), and the out-of-distribution warning did not fire. Always check the solver comparison.</p>
-    <p id="draw-msg" class="note" role="status"></p>
   </div>
-
-  <div id="panel-paste" class="panel" hidden>
-    <label for="paste">256 numbers, separated by commas, spaces or newlines (values at x = (i + 0.5)/256)</label>
-    <textarea id="paste" rows="4" spellcheck="false"></textarea>
-    <div class="row"><button type="button" id="apply-paste" class="btn">Use these numbers</button></div>
-    <p id="paste-msg" class="note" role="status"></p>
-  </div>
-
-  <h3>Input that will be sent to the model</h3>
-  <canvas id="input-plot" class="plot wide" role="img" aria-label="Plot of the initial condition"></canvas>
-  <p id="input-summary" class="note"></p>
-  <p id="input-warning" class="warn" role="status" hidden></p>
-
-  <div class="runrow">
-    <button type="button" id="run" class="btn primary">Run the FNO and the solver</button>
-    <span id="status" class="status" role="status" aria-live="polite"></span>
-  </div>
-</section>
-
-<section id="results" aria-labelledby="h-results" hidden>
-  <h2 id="h-results">2. Results</h2>
-  <div id="ood-banner" role="alert"></div>
-  <div id="metrics" class="cards"></div>
-
-  <h3>Space-time solution (time goes up)</h3>
-  <div class="hmgrid">
-    <figure><canvas id="hm-fno" class="plot heat" role="img" aria-label="Heatmap of the FNO solution"></canvas><figcaption>FNO prediction (from the API)</figcaption></figure>
-    <figure><canvas id="hm-solver" class="plot heat" role="img" aria-label="Heatmap of the numerical solver solution"></canvas><figcaption>Numerical solver (from the API)</figcaption></figure>
-    <figure><canvas id="hm-error" class="plot heat" role="img" aria-label="Heatmap of the absolute difference"></canvas><figcaption>|FNO − solver|, computed in your browser from the two arrays above</figcaption></figure>
-  </div>
-
-  <h3>Profile at a chosen time</h3>
-  <div class="row">
-    <label for="t-slider">Time</label>
-    <input id="t-slider" type="range" min="0" max="200" step="1" value="100">
-    <output id="t-readout" for="t-slider">t = 1.00</output>
-  </div>
-  <canvas id="profile-plot" class="plot wide" role="img" aria-label="Solution profile at the chosen time"></canvas>
-  <p id="profile-summary" class="note"></p>
-  <details><summary>Numbers at this time (every 16th grid point)</summary><div class="tablewrap"><table id="profile-table"></table></div></details>
-
-  <h3>How the difference grows with time</h3>
-  <canvas id="err-time-plot" class="plot wide" role="img" aria-label="Relative difference between FNO and solver versus time"></canvas>
-
-  <div class="row dl">
-    <button type="button" id="dl-json" class="btn">Download JSON</button>
-    <button type="button" id="dl-csv" class="btn">Download CSV</button>
-  </div>
-  <p id="provenance" class="note"></p>
-</section>
-
-<section id="about" aria-labelledby="h-about">
-  <h2 id="h-about">About the model, and its limits</h2>
-  <div id="model-info" class="cards"><p class="note">Loading model information…</p></div>
-  <h3>Please read: what this model cannot do</h3>
-  <ul class="limits">
-    <li><strong>Shocks are its weak spot.</strong> Close to a shock the error was about 3× larger than elsewhere (0.134 vs 0.042 in tests).</li>
-    <li><strong>It does not copy its own input perfectly.</strong> At t = 0 the output is off by about 1.6% (relative), so the first frame is not exact.</li>
-    <li><strong>It does not conserve mass.</strong> The total amount of "stuff" drifts about 100× more than in the reference data. The numerical solver conserves it to rounding error.</li>
-    <li><strong>One viscosity, one family of inputs.</strong> It was trained only for ν = 0.01 and smooth random wave mixtures at 256 points. Anything else is outside what was tested.</li>
-    <li><strong>A warning is not a guarantee either way.</strong> Taller, noisier or much more wiggly inputs raise a warning, but milder problems (for example a square wave) can be wrong without one. Always look at the solver next to it.</li>
-    <li><strong>It is a learned approximation, not a proof.</strong> The numerical solver is the reference; the FNO is just much faster.</li>
-  </ul>
-  <p class="note">Data: PDEBench (Takamoto et al., 2022), DaRUS DOI 10.18419/darus-2986, licence CC BY 4.0. API docs: <a href="/docs">/docs</a> · <a href="/model-info">/model-info</a> · <a href="/health">/health</a></p>
-</section>
 </main>
+</div>
 
-<footer class="wrap foot"><p class="note">Results on this page are only ever displayed from API responses. Nothing is simulated in your browser.</p></footer>
+<!-- Generic help dialog: its title and body are filled from the <template> elements below, only when the user clicks a help button. -->
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <form method="dialog">
+    <header class="dhead"><h2 id="dlg-title"></h2><button type="submit" class="btn small" aria-label="Close" value="close">Close ✕</button></header>
+    <div id="dlg-body" class="dbody"></div>
+  </form>
+</dialog>
+
+<dialog id="dlg-advanced" aria-labelledby="adv-title">
+  <form method="dialog" id="adv-form">
+    <header class="dhead"><h2 id="adv-title">More ways to set the starting wave</h2><button type="submit" class="btn small" value="close" aria-label="Close">Close ✕</button></header>
+    <div class="dbody">
+      <h3>Build it from sine waves</h3>
+      <p class="note">Wave = mean + sum of (amplitude × sine). “Waves” is how many full oscillations fit between x = 0 and x = 1.</p>
+      <div class="mixgrid" id="mixgrid"></div>
+      <div class="row"><label for="mix-mean">Mean (shifts the whole wave up or down)</label><input id="mix-mean" type="number" step="0.1" value="0"></div>
+      <div class="row"><button type="button" id="apply-mix" class="btn">Use this wave</button><span id="mix-msg" class="note" role="status"></span></div>
+      <h3>Paste your own numbers</h3>
+      <label for="paste">Exactly 256 numbers, separated by commas, spaces or new lines (the value at each of 256 equally spaced points)</label>
+      <textarea id="paste" rows="4" spellcheck="false"></textarea>
+      <div class="row"><button type="button" id="apply-paste" class="btn">Use these numbers</button><span id="paste-msg" class="note" role="status"></span></div>
+      <h3>Drawing</h3>
+      <label class="inline"><input type="checkbox" id="snap" checked> Smooth my drawings so they are closer to what the AI was trained on (recommended)</label>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-why" aria-labelledby="why-title">
+  <form method="dialog">
+    <header class="dhead"><h2 id="why-title">Why this message?</h2><button type="submit" class="btn small" value="close" aria-label="Close">Close ✕</button></header>
+    <div id="why-body" class="dbody"></div>
+  </form>
+</dialog>
+
+<dialog id="dlg-model" aria-labelledby="model-title">
+  <form method="dialog">
+    <header class="dhead"><h2 id="model-title">Model details</h2><button type="submit" class="btn small" value="close" aria-label="Close">Close ✕</button></header>
+    <div id="model-body" class="dbody"><p class="note">Loading…</p></div>
+  </form>
+</dialog>
+
+<template id="help-guide"><h2>How to use this page (30 seconds)</h2>
+  <ol class="steps">
+    <li><strong>Pick a starting wave.</strong> Click one of the small pictures on the left, or draw your own wave directly on the grey plot.</li>
+    <li><strong>Press Predict.</strong> The server runs two things on that wave: an AI model, and a classic numerical solver that does the maths step by step.</li>
+    <li><strong>Read the result.</strong> The coloured bar near the top says whether the AI can be trusted for this wave. The three maps show the AI, the solver and where they differ. The bottom row shows one moment in detail, how the gap grows, and some key numbers.</li>
+  </ol>
+  <h3>What each control does</h3>
+  <ul>
+    <li><strong>Small pictures</strong>: ready-made starting waves. The lower row is made to confuse the AI, to show where it fails.</li>
+    <li><strong>Grey plot</strong>: shows the starting wave; draw on it with one stroke from left to right to replace it.</li>
+    <li><strong>More ways to set the wave</strong>: build it from sine waves or paste numbers; also the smoothing switch for drawings.</li>
+    <li><strong>Predict</strong>: runs the forecast. Nothing on the maps is made up by the page: it only shows what the server sends back.</li>
+    <li><strong>Time slider</strong>: moves the “Snapshot” to another moment.</li>
+    <li><strong>Download</strong>: saves all the numbers for your own analysis.</li>
+    <li><strong>Question-mark buttons</strong>: explain each panel. You only see these when you ask.</li>
+  </ul></template>
+
+<template id="help-about"><h2>What is this?</h2>
+  <p>This page shows how a wave on a ring-shaped road changes over time. The rule it follows is the <strong>viscous Burgers equation</strong>, a classic simplified model of fluids and traffic: fast parts of a wave catch up with slow parts and pile up into sharp fronts called <strong>shocks</strong>, while a little viscosity smooths them out.</p>
+  <p>Two things compute the answer. The <strong>classic solver</strong> steps the equation forward in tiny time steps. It is accurate but comparatively slow. The <strong>AI model</strong> (a Fourier Neural Operator) was trained on 4,000 solved examples and jumps straight to the whole answer; here it was roughly 200 times faster than our simple solver.</p>
+  <p>The point of the page is to let you <em>see</em> where the fast AI agrees with the trusted solver, and where it does not.</p>
+  <p class="note">Data: PDEBench (Takamoto et al., 2022), DaRUS DOI 10.18419/darus-2986, licence CC BY 4.0. API documentation is at <a href="/docs">/docs</a>.</p></template>
+
+<template id="help-equation"><h2>The equation in plain words</h2>
+  <p class="equation">∂u/∂t + ∂/∂x(u²/2) = (ν/π)·∂²u/∂x²</p>
+  <ul>
+    <li><strong>u(x, t)</strong> is the wave: its height at position x and time t.</li>
+    <li><strong>∂u/∂t</strong> is how fast the height changes at one position.</li>
+    <li><strong>∂/∂x(u²/2)</strong> is the nonlinear transport: higher parts move faster, so they overtake lower parts and steepen into shocks.</li>
+    <li><strong>(ν/π)·∂²u/∂x²</strong> is viscosity: it smooths sharp changes. Here ν = 0.01 is fixed.</li>
+  </ul>
+  <p><strong>Why ν/π and not just ν?</strong> The dataset the AI learned from uses that convention. We checked it by running our own solver four ways against the stored solutions; only the ν/π form matched (to about 0.2%).</p>
+  <p>The road is a ring: the right end of the plot connects back to the left end. Time runs from 0 to 2.</p></template>
+
+<template id="help-input"><h2>Choosing a starting wave</h2>
+  <p><strong>Ready-made waves.</strong> Hover over a picture (or focus it with the keyboard) to see how well the AI did on that wave in our tests. <em>Smooth wave</em> and <em>Bump</em> are easy for it (differences of about 2% or less). <em>Two waves</em>, <em>Square</em> and <em>Random mix</em> are harder (about 5–11%, sometimes more), and the red warning is <em>not</em> raised for them, which is why the solver is always shown next to the AI. Click <em>Random mix</em> again for a new random wave.</p>
+  <p><strong>Try to break it.</strong> <em>Too tall</em> is higher than anything in training, <em>Noise</em> is random jitter, <em>Very wiggly</em> has 40 oscillations. The page raises a red warning for these and the AI is badly wrong.</p>
+  <p><strong>Drawing.</strong> Press on the grey plot and draw one stroke from left to right. By default your drawing is smoothed to at most 8 oscillations so it looks more like the training waves. Hand-drawn waves are usually harder for the AI: in tests with synthetic drawings the AI and solver differed by about 6–8% even after smoothing. The dashed lines mark the largest height seen in training (about ±3.35).</p>
+  <p><strong>More ways.</strong> Build a wave from sines or paste 256 numbers. The wave always has 256 points.</p></template>
+
+<template id="help-maps"><h2>Reading the three maps</h2>
+  <ul>
+    <li><strong>Across</strong> is position x from 0 to 1. <strong>Up</strong> is time from 0 (bottom) to 2 (top), so the bottom edge is your starting wave.</li>
+    <li><strong>Colour</strong> is the wave height: blue is negative, white is zero, red is positive. The AI and solver maps share one colour scale so you can compare them directly.</li>
+    <li><strong>Diagonal lines</strong> are fronts moving across the road; very sharp ones are shocks.</li>
+    <li><strong>“Where they differ”</strong> shows the size of the gap between the two maps, point by point, with its own scale (printed under the map). Bright means a big gap. If it is mostly dark, the AI is close to the solver.</li>
+  </ul></template>
+
+<template id="help-snapshot"><h2>Snapshot at one moment</h2>
+  <p>This slices the maps at one time. The solid line is the classic solver and the dashed line is the AI. Where they overlap, the AI is right. Drag the time slider (or use the arrow keys when it is selected) to move through time.</p>
+  <p>The text under the plot gives the size of the gap at that moment.</p></template>
+
+<template id="help-gap"><h2>Gap over time</h2>
+  <p>For each moment, how big the difference between AI and solver is, relative to the size of the solver's answer (so 0.03 means about 3%). It usually starts small and grows a little, because small errors build up. For familiar waves it stays within a few percent. A line that shoots up means the AI is struggling with that wave.</p></template>
+
+<template id="help-numbers"><h2>Key numbers</h2>
+  <ul>
+    <li><strong>Difference</strong>: the overall gap between AI and solver across the whole map, as a percentage of the solver's answer (“relative L2 error”). Typical for familiar waves: about 1–3%.</li>
+    <li><strong>Speed</strong>: how long the server took. The AI answers in a few milliseconds; the solver takes a fraction of a second to a second. The AI's speed advantage is the reason to use it.</li>
+    <li><strong>Mass drift</strong>: the total amount of “stuff” in the wave should stay constant. The solver keeps it constant to rounding error; the AI lets it drift a little, which is one of its known flaws.</li>
+    <li><strong>Download</strong>: CSV (a long table: time, position, AI, solver, gap) or JSON (everything, including the warning information).</li>
+  </ul></template>
+
+<template id="help-limits"><h2>When not to trust the AI</h2>
+  <ul class="limits">
+    <li><strong>Sharp fronts (shocks).</strong> Right next to a shock the error was about 3× larger than elsewhere (0.134 versus 0.042 in tests).</li>
+    <li><strong>It does not copy its own input perfectly.</strong> At time 0 the AI's answer is off by about 1.6%, so the first frame is not exact.</li>
+    <li><strong>It does not conserve mass.</strong> The total drifts roughly 100× more than in the reference data. The classic solver does not have this problem.</li>
+    <li><strong>One physics setting only.</strong> It was trained for viscosity ν = 0.01 and smooth random mixtures of sine waves, on 256 points. Anything else is untested.</li>
+    <li><strong>The warning is not a guarantee.</strong> Very tall, noisy or very wiggly starting waves trigger a red warning. Milder problems (a square wave, many hand-drawn curves) can be wrong without any warning. That is why the solver is always shown next to the AI: if they disagree, believe the solver.</li>
+    <li><strong>It is an approximation, not a proof.</strong> The classic solver is the reference; the AI is just much faster.</li>
+  </ul></template>
 
 <script src="/static/lib.js"></script>
 <script src="/static/app.js"></script>

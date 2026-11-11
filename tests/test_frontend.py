@@ -73,9 +73,29 @@ def test_static_assets_served(client, name, ctype):
 
 def test_page_states_correct_equation_and_fixed_settings():
     html = read("index.html")
-    assert "(ν/π)" in html and "ν = 0.01 (fixed)" in html and "256 grid points" in html and "not plain ν" in html
-    for must in ["Shocks are its weak spot", "does not copy its own input", "does not conserve mass", "One viscosity", "CC BY 4.0"]:
-        assert must in html
+    assert "(ν/π)" in html and "ν = 0.01 (fixed)" in html and "256 grid points" in html
+    assert "Why ν/π and not just ν?" in html                                   # explained in the equation dialog
+    for must in ["Sharp fronts (shocks)", "does not copy its own input", "does not conserve mass", "One physics setting only", "CC BY 4.0",
+                 "The warning is not a guarantee"]:
+        assert must in html, must
+
+
+def _visible_text(html):
+    html = re.sub(r"<template.*?</template>", "", html, flags=re.S)
+    html = re.sub(r"<dialog.*?</dialog>", "", html, flags=re.S)
+    html = re.sub(r"<(script|style).*?</>", "", html, flags=re.S)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html)).strip()
+
+
+def test_explanations_live_only_in_dialogs_and_are_opt_in():
+    vis = _visible_text(read("index.html"))
+    assert len(vis.split()) < 220, len(vis.split())                            # the always-visible page stays short
+    for hidden_text in ["What each control does", "Gibbs", "relative L2", "Why ν/π", "nonlinear transport", "Mass drift: the total"]:
+        assert hidden_text not in vis, hidden_text
+    topics = re.findall(r'data-help="([a-z]+)"', read("index.html"))
+    assert len(set(topics)) >= 9
+    for t in set(topics):
+        assert f'<template id="help-{t}">' in read("index.html"), t
 
 
 def test_every_id_used_by_the_script_exists_in_the_page():
@@ -103,7 +123,8 @@ def test_accessibility_basics():
             assert a.get("role") == "img" and a.get("aria-label"), a
         if tag == "section":
             assert a.get("aria-labelledby"), a
-    assert 'role="alert"' in html and 'aria-live="polite"' in html
+    assert 'role="status"' in html and 'aria-live="polite"' in html
+    assert html.count("<dialog") >= 4 and all(a.get("aria-labelledby") for tag, a in p.attrs if tag == "dialog")
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")

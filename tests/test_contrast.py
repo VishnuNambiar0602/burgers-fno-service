@@ -24,7 +24,7 @@ def ratio(a, b):
 
 THEMES = {"light": tokens(":root{"), "dark": tokens(':root[data-theme="dark"]')}
 TEXT_PAIRS = [("ink", "bg"), ("ink", "card"), ("muted", "bg"), ("muted", "card"), ("brand", "bg"), ("brand-ink", "brand"),
-              ("warn-ink", "warn-bg"), ("bad-ink", "bad-bg"), ("ink", "ok-bg"), ("ink", "kid")]
+              ("warn-ink", "warn-bg"), ("bad-ink", "bad-bg"), ("ink", "ok-bg"), ("ink", "idle-bg")]
 
 
 def test_text_contrast_meets_aa_in_both_themes():
