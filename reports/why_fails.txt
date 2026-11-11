@@ -1,0 +1,26 @@
+A. Where each input sits among the 4000 training initial conditions (percentile = share of training inputs that are SMALLER)
+feature                      train median  train p99 |             sine        two waves           square
+max |u|                              1.27       2.66 |         1 ( 31%)      1.27 ( 50%)         1 ( 31%)
+max |du/dx| (steepness)              15.3       67.8 |      6.28 ( 15%)      25.7 ( 80%)       256 (100%)
+dominant wavenumber                     3          8 |         1 (  0%)         2 ( 22%)         1 (  0%)
+energy above k=8                 2.21e-06     0.0591 |  4.06e-32 (  0%)  2.97e-31 (  0%)    0.0502 ( 98%)
+std                                 0.488        0.9 |     0.707 ( 86%)     0.667 ( 78%)         1 (100%)
+
+B. Where the FNO (seed 1) is wrong, for the two hard waves (error vs solver truth)
+  two waves                absolute RMS error / RMS of truth at t=0.5: 0.029/0.207  t=1: 0.022/0.111  t=2: 0.026/0.062
+  two waves                whole 0.111 | at t=0.1/0.5/1/2: 0.045 0.138 0.203 0.423 | points near a shock: 3%, share of squared error there: 24% | max |truth| at t=2: 0.11
+  square                   absolute RMS error / RMS of truth at t=0.5: 0.049/0.536  t=1: 0.043/0.273  t=2: 0.035/0.132
+  square                   whole 0.110 | at t=0.1/0.5/1/2: 0.085 0.091 0.159 0.261 | points near a shock: 4%, share of squared error there: 49% | max |truth| at t=2: 0.21
+  smooth wave (reference)  absolute RMS error / RMS of truth at t=0.5: 0.012/0.417  t=1: 0.007/0.236  t=2: 0.009/0.122
+  smooth wave (reference)  whole 0.027 | at t=0.1/0.5/1/2: 0.015 0.028 0.032 0.075 | points near a shock: 3%, share of squared error there: 45% | max |truth| at t=2: 0.20
+
+C. Free fixes at inference time (mean relative L2 vs truth; lower is better)
+                          seed 1 alone (deployed)reflection averageshift average (8 shifts) 3-seed ensemble3 seeds + reflection
+validation (n=300)                  0.0269          0.0241          0.0269          0.0237          0.0224
+two waves                           0.1107          0.1052          0.1107          0.1170          0.1142
+square                              0.1097          0.0927          0.1097          0.0884          0.0840
+bump                                0.0174          0.0139          0.0167          0.0146          0.0126
+hand-drawn-like (n=60)              0.0859          0.0773          0.0860          0.0747          0.0717
+random sine mixes (n=40)            0.0834          0.0772          0.0834          0.0762          0.0742
+
+Seed disagreement as a free warning: AUC 0.99; threshold at validation p99 = 0.037 flags 58% of bad cases, 0.3% of good ones
