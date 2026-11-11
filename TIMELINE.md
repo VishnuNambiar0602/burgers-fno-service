@@ -11,7 +11,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | 2026-11-09 20:07 (T+5h03m) | DONE |
 | M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | 2026-11-09 21:13 (T+6h09m) | DONE (kept models; extra validation 23:03) |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | 2026-11-09 23:09 (T+8h05m) | DONE |
-| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | | BLOCKED: HF Docker Spaces need PRO (402); host decision needed |
+| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | 2026-11-11 09:25 (local only) | PARTIAL: runs locally and verified; no public URL (HF 402) |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | 2026-11-10 09:03 (T+18h) | DONE locally (not deployed) |
 | M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | | README drafted; live verification blocked by M4 |
 | Buffer (no new features) | T+72 | 2026-11-12 15:03 | - | | - |
@@ -38,3 +38,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-10 00:02 IST: Docker local test PASSED: image burgers-fno-local 319 MB built from the staged 12 files (python:3.13-slim + CPU torch 2.14.1); container up in <1 s, live_check: max abs diff vs offline 7.77e-07, same sha256, HTTP /predict median 64 ms, container memory 183 MiB. Container removed, image kept. Docker Desktop was started by Claude at 23:57 on user request and is still running. Waiting for user: .env filled + run deploy_hf.py (public Space, name burgers-fno-service).
 - 2026-11-10 08:41 IST: deploy_hf.py run (user pre-authorised): HF 402 Payment Required for Docker Space on free tier. M4 BLOCKED (external). See WORKLOG.md.
 - 2026-11-10 09:03 IST: M5 (front end) DONE locally: static HTML/JS served by the app, 19/19 real-browser checks, 32 tests pass. M6 README drafted (final live verification blocked with M4). See WORKLOG.md.
+- 2026-11-11 09:25 IST: M4 re-scoped by user to a LOCAL deployment (127.0.0.1:8000, CPU settings). Verified: live_check PASS, 19/19 browser checks. Public live URL still not achieved (HF 402).
