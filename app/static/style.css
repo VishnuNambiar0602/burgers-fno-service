@@ -65,7 +65,7 @@ a{color:var(--brand)}
 .input .note{flex:none}
 .warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:8px;padding:4px 8px;margin:3px 0;font-size:.8rem}
 .runrow{display:flex;gap:6px;align-items:center;justify-content:space-between;flex:none;margin-top:4px}
-.runrow.dl{justify-content:flex-start}
+.runrow.dl{justify-content:flex-start;flex-wrap:wrap;gap:4px 6px}
 
 .btn{font:inherit;cursor:pointer;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 12px;min-height:32px}
 .btn:hover{border-color:var(--brand)} .btn.ghost{background:transparent} .btn.small{padding:2px 9px;min-height:26px;font-size:.82rem}
