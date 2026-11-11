@@ -101,8 +101,32 @@ dialog form{display:flex;flex-direction:column;max-height:86vh}
 label.inline{display:flex;gap:8px;align-items:flex-start}
 [hidden]{display:none !important}
 
-/* ---- small or short screens: stack the panels and let the page scroll instead of squeezing ---- */
-@media (max-width:1099px), (max-height:619px){
+/* ---- shorter windows (laptops with toolbars, Windows scaling 125-150%): same dashboard, tighter spacing, still one screen ---- */
+@media (min-width:900px) and (max-height:700px){
+  body{font-size:13px}
+  .app{gap:6px;padding:6px 8px 8px}
+  .tag{display:none}
+  .brand h1{font-size:1.05rem}
+  .strip{min-height:30px;padding:3px 10px;font-size:.88rem}
+  .dash,.left,.right,.row3{gap:6px}
+  .card{padding:4px 6px 6px;border-radius:8px} .card h2{font-size:.84rem;margin:0 0 2px}
+  .btn{min-height:28px;padding:3px 10px} .btn.small{min-height:22px;padding:1px 8px} .btn.primary{padding:4px 18px;font-size:.95rem}
+  .q{width:18px;height:18px;font-size:.7rem}
+  .equation{font-size:.95rem;padding:3px;margin:0 0 3px}
+  .chips li{font-size:.7rem;padding:0 6px}
+  .pre canvas{height:22px} .pre span{font-size:.66rem} .pre{padding:2px 1px 1px}
+  .grp{margin:2px 0;font-size:.72rem} .note{font-size:.72rem;margin:2px 0} .warn{font-size:.72rem;padding:2px 6px;margin:2px 0}
+  .runrow{margin-top:2px} .nums{font-size:.78rem;gap:1px 6px} .slider{font-size:.74rem}
+}
+@media (min-width:900px) and (max-height:560px){
+  .chips{display:none} .badge{font-size:.72rem}
+  .actions .btn{padding:2px 8px;min-height:24px;font-size:.8rem}
+  .strip{min-height:26px;font-size:.82rem}
+  #input-note{display:none}
+}
+
+/* ---- narrow screens (phones, small tablets): stack the panels and let the page scroll ---- */
+@media (max-width:899px){
   .app{height:auto;min-height:100vh}
   .dash,.right,.left{display:flex;flex-direction:column}
   .row3{grid-template-columns:1fr}

@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -92,12 +92,22 @@ async def security_headers(request: Request, call_next):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     if request.url.path == "/" or request.url.path.startswith("/static/"):   # /docs (Swagger) needs its own CDN assets
         resp.headers["Content-Security-Policy"] = CSP
+        resp.headers["Cache-Control"] = "no-cache"                           # always revalidate: no stale stylesheet next to a new page
     return resp
+
+
+def _index_html():
+    """index.html uses relative asset links so it also works from file:// or an editor preview; here they become absolute and versioned."""
+    html = open(os.path.join(STATIC_DIR, "index.html"), encoding="utf-8").read()
+    v = int(max(os.path.getmtime(os.path.join(STATIC_DIR, n)) for n in ("index.html", "style.css", "lib.js", "app.js")))
+    for name in ("style.css", "lib.js", "app.js"):
+        html = html.replace(f'"{name}"', f'"/static/{name}?v={v}"')
+    return html
 
 
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 def index():
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"), media_type="text/html")
+    return HTMLResponse(_index_html())
 
 
 @app.get("/api")

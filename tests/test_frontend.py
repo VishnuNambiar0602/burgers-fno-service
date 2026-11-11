@@ -106,7 +106,7 @@ def test_every_id_used_by_the_script_exists_in_the_page():
 
 def test_no_external_hosts_and_no_inline_code_or_styles():
     for n in ("index.html", "app.js", "lib.js", "style.css"):
-        assert not re.search(r"https?://", read(n)), n                       # nothing is loaded from third parties
+        assert not re.search(r"https?://(?!127\.0\.0\.1)", read(n)), n      # nothing is loaded from third parties (the local address appears only in help text)
     p = parsed()
     assert not any("style" in a or any(k.startswith("on") for k in a) for _, a in p.attrs)
     assert not any(t == "script" and "src" not in a for t, a in p.attrs)    # CSP: no inline scripts
@@ -157,10 +157,10 @@ def _serve(env_extra=None):
     return proc, port
 
 
-def _browser(port, scenario):
+def _browser(port, scenario, url=None):
     out = os.path.join(ROOT, "build", "ui_test_out")
     os.makedirs(out, exist_ok=True)
-    r = subprocess.run(["node", "scripts/ui_check.mjs", f"http://127.0.0.1:{port}", out, scenario], cwd=ROOT, capture_output=True, text=True, timeout=240)
+    r = subprocess.run(["node", "scripts/ui_check.mjs", url or f"http://127.0.0.1:{port}", out, scenario], cwd=ROOT, capture_output=True, text=True, timeout=400)
     try:
         res = json.loads(r.stdout)
     except Exception:
@@ -190,6 +190,63 @@ def test_real_browser_shows_error_and_no_result_when_model_is_missing():
         if "skipped" in res:
             pytest.skip(res["skipped"])
         bad = {k: v for k, v in res.items() if not v["ok"]}
+        assert code == 0 and not bad, bad
+    finally:
+        proc.terminate()
+        proc.wait(timeout=10)
+
+
+def test_html_uses_relative_asset_links_so_it_also_works_from_disk():
+    html = read("index.html")
+    assert 'href="style.css"' in html and 'src="lib.js"' in html and 'src="app.js"' in html
+    assert "/static/" not in html.split("<body>")[0] and 'src="/static/' not in html
+    for n in ("style.css", "lib.js", "app.js"):
+        assert os.path.exists(os.path.join(STATIC, n))          # the files sit next to index.html
+
+
+def test_root_serves_absolute_versioned_links_and_never_a_stale_copy(client):
+    r = client.get("/")
+    assert re.search(r'href="/static/style\.css\?v=\d+"', r.text) and re.search(r'src="/static/app\.js\?v=\d+"', r.text)
+    assert r.headers["cache-control"] == "no-cache"
+    assert client.get("/static/style.css").headers["cache-control"] == "no-cache"
+    s = client.get("/static/index.html")
+    assert s.status_code == 200 and 'href="style.css"' in s.text                 # the raw page also works at /static/
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_real_browser_page_opened_from_disk_is_styled_and_explains_itself():
+    url = "file:///" + os.path.join(STATIC, "index.html").replace("\\", "/")
+    code, res = _browser(0, "offline", url)
+    if "skipped" in res:
+        pytest.skip(res["skipped"])
+    bad = {k: v for k, v in res.items() if not v["ok"]}
+    assert code == 0 and not bad, bad
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_real_browser_static_files_without_the_api_are_styled_and_explain_themselves():
+    port = _free_port()
+    srv = subprocess.Popen([sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory", STATIC], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(1.5)
+        code, res = _browser(port, "offline", f"http://127.0.0.1:{port}/index.html")
+        if "skipped" in res:
+            pytest.skip(res["skipped"])
+        bad = {k: v for k, v in res.items() if not v["ok"]}
+        assert code == 0 and not bad, bad
+    finally:
+        srv.terminate()
+        srv.wait(timeout=10)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_real_browser_one_screen_in_realistic_laptop_windows():
+    proc, port = _serve()
+    try:
+        code, res = _browser(port, "matrix")
+        if "skipped" in res:
+            pytest.skip(res["skipped"])
+        bad = {k: v for k, v in res.items() if not (v["ok"] and v["info"]["fits"])}
         assert code == 0 and not bad, bad
     finally:
         proc.terminate()

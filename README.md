@@ -145,7 +145,7 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 | Dashboard in a real Chromium browser (Edge, headless, 47 checks): fits **one screen with no scrolling** at 1920x1080, 1440x900, 1366x768 and 1280x720, before and after a run, with no clipped panel; all explanations only inside dialogs (9 help topics open, close with Esc and return focus); run, amber/red warning strip, mouse drawing, advanced dialog, CSV/JSON downloads, error state; 375 px phone width without sideways overflow (it scrolls vertically there) | Firefox, Safari, touch input, screen readers |
 | WCAG AA contrast of the colour tokens (computed) | Colour-blind simulation of the heatmaps |
 | Docker image builds and runs locally (319 MB, 183 MiB memory in use) | `deploy/Dockerfile.render` and `render.yaml` (not built or tested) |
-| 33 automated tests | Bitwise reproducibility across GPUs |
+| 38 automated tests | Bitwise reproducibility across GPUs |
 
 ## 7. Speed and memory (this laptop: i7-13650HX, RTX 4050 Laptop 6 GB, 15.6 GB RAM)
 
@@ -157,7 +157,7 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 
 ## 8. Using it
 
-Web page at `/`, API docs at `/docs`. The page is a single-screen dashboard (best on a display of at least 1100x620; smaller screens get a stacked, scrolling layout). Left: the physics, eight ready-made starting waves (five normal, three "try to break it") and a plot you can also draw on. Middle and right: the AI forecast, the classic solver and a difference map, then a snapshot with a time slider, the gap over time, and key numbers with CSV/JSON download. A coloured strip says whether to trust the AI (green: close to the solver; amber: the two disagree by more than 6%; red: the input is outside the training range). All explanations (how to use it, the equation in plain words, how to read the maps, limits, model details) are in dialogs that open only when asked.
+Web page at `/`, API docs at `/docs`. The page is a single-screen dashboard (it fits one screen down to about 900x500 CSS pixels, which covers a 1080p laptop at 150% scaling with browser toolbars; narrower screens get a stacked, scrolling layout). Open it through the server at `http://127.0.0.1:8000/`. If the HTML file is opened straight from disk or from an editor preview, it is still styled but shows a notice that the server is not connected, and Predict is switched off. Left: the physics, eight ready-made starting waves (five normal, three "try to break it") and a plot you can also draw on. Middle and right: the AI forecast, the classic solver and a difference map, then a snapshot with a time slider, the gap over time, and key numbers with CSV/JSON download. A coloured strip says whether to trust the AI (green: close to the solver; amber: the two disagree by more than 6%; red: the input is outside the training range). All explanations (how to use it, the equation in plain words, how to read the maps, limits, model details) are in dialogs that open only when asked.
 
 ```
 POST /predict   {"u0": [256 numbers (or 512)], "include_solver": true}

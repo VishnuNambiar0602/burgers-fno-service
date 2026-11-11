@@ -4,7 +4,7 @@
   var BL = window.BL, NX = BL.NX, NT = BL.NT, YR = 3.6;                       // fixed vertical range of the input plot
   var IN_M = { l: 30, r: 8, t: 6, b: 22 };                                     // input plot margins (also used to map pointer -> data)
   var $ = function (id) { return document.getElementById(id); };
-  var state = { input: null, preset: "sine", seed: 1, stroke: null, rawStroke: null, drawInfo: null, snapOn: true, result: null, busy: false, tIndex: 100, model: null, modelErr: null, why: null };
+  var state = { offline: false, input: null, preset: "sine", seed: 1, stroke: null, rawStroke: null, drawInfo: null, snapOn: true, result: null, busy: false, tIndex: 100, model: null, modelErr: null, why: null };
   var SHORT = { sine: "Smooth wave", two: "Two waves", bump: "Bump", square: "Square", random: "Random mix", tall: "Too tall", noise: "Noise", wiggly: "Very wiggly" };
 
   function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888"; }
@@ -52,14 +52,14 @@
   }
 
   function plotLines(canvas, o) {
-    var s = setup(canvas), ctx = s.ctx, m = o.m || { l: 38, r: 8, t: 8, b: 32 }, ml = m.l, mt = m.t, pw = s.w - m.l - m.r, ph = s.h - m.t - m.b;
+    var s = setup(canvas), ctx = s.ctx, m = o.m || { l: 38, r: 8, t: 8, b: 32 }; if (s.h < 150 && m.b > 24) m = { l: m.l, r: m.r, t: m.t, b: 24 }; var ml = m.l, mt = m.t, pw = s.w - m.l - m.r, ph = s.h - m.t - m.b;
     var X = function (x) { return ml + (x - o.xmin) / (o.xmax - o.xmin) * pw; }, Y = function (y) { return mt + (1 - (y - o.ymin) / (o.ymax - o.ymin)) * ph; };
     var ink = cssv("--ink"), muted = cssv("--muted"), line = cssv("--line");
     ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.lineWidth = 1; ctx.textBaseline = "middle"; ctx.textAlign = "right";
     niceTicks(o.ymin, o.ymax, o.yticks || 4).forEach(function (v) { ctx.beginPath(); ctx.moveTo(ml, Y(v)); ctx.lineTo(ml + pw, Y(v)); ctx.stroke(); ctx.fillText(tickLabel(v), ml - 4, Y(v)); });
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     niceTicks(o.xmin, o.xmax, 4).forEach(function (v) { ctx.fillText(tickLabel(v), X(v), mt + ph + 4); });
-    ctx.fillStyle = ink; if (o.xlabel) ctx.fillText(o.xlabel, ml + pw / 2, mt + ph + 17);
+    ctx.fillStyle = ink; if (o.xlabel && m.b >= 30) ctx.fillText(o.xlabel, ml + pw / 2, mt + ph + 17);
     if (o.ylabel) { ctx.save(); ctx.translate(9, mt + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = "top"; ctx.fillText(o.ylabel, 0, -6); ctx.restore(); }
     ctx.strokeStyle = muted; ctx.strokeRect(ml, mt, pw, ph);
     (o.hlines || []).forEach(function (h) { ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = muted; ctx.beginPath(); ctx.moveTo(ml, Y(h.y)); ctx.lineTo(ml + pw, Y(h.y)); ctx.stroke(); ctx.fillStyle = muted; ctx.textAlign = "left"; ctx.textBaseline = "bottom"; if (h.label) ctx.fillText(h.label, ml + 4, Y(h.y) - 1); ctx.restore(); });
@@ -72,7 +72,7 @@
   }
 
   function drawHeatmap(canvas, flat, vmin, vmax, cmap, name) {
-    var s = setup(canvas), ctx = s.ctx, ml = 28, mr = 8, mt = 4, mb = 52, pw = s.w - ml - mr, ph = s.h - mt - mb;
+    var s = setup(canvas), ctx = s.ctx, small = s.h < 215, ml = 26, mr = 6, mt = 4, mb = small ? 40 : 52, pw = s.w - ml - mr, ph = s.h - mt - mb;
     var off = document.createElement("canvas"); off.width = NX; off.height = NT;
     off.getContext("2d").putImageData(new ImageData(BL.heatmapRGBA(flat, NT, NX, vmin, vmax, cmap), NX, NT), 0, 0);
     ctx.imageSmoothingEnabled = false; ctx.drawImage(off, ml, mt, pw, ph);
@@ -81,8 +81,8 @@
     [0, 1, 2].forEach(function (t) { ctx.fillText(String(t), ml - 4, mt + ph - t / 2 * ph); });
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     [0, 0.5, 1].forEach(function (x) { ctx.fillText(String(x), ml + x * pw, mt + ph + 3); });
-    ctx.fillStyle = ink; ctx.fillText("position x  (time t goes up)", ml + pw / 2, mt + ph + 15);
-    var cy = mt + ph + 29, ch = 8; for (var i = 0; i < pw; i++) { var c = BL.colorAt(cmap, i / (pw - 1)); ctx.fillStyle = "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; ctx.fillRect(ml + i, cy, 1, ch); }
+    ctx.fillStyle = ink; ctx.fillText(small ? "position x (time up)" : "position x  (time t goes up)", ml + pw / 2, mt + ph + (small ? 13 : 15));
+    var cy = mt + ph + (small ? 25 : 29), ch = small ? 6 : 8; for (var i = 0; i < pw; i++) { var c = BL.colorAt(cmap, i / (pw - 1)); ctx.fillStyle = "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; ctx.fillRect(ml + i, cy, 1, ch); }
     ctx.strokeStyle = muted; ctx.strokeRect(ml, cy, pw, ch); ctx.fillStyle = muted; ctx.textBaseline = "top";
     ctx.textAlign = "left"; ctx.fillText(BL.fmt(vmin, 2), ml, cy + ch + 2); ctx.textAlign = "right"; ctx.fillText(BL.fmt(vmax, 2), ml + pw, cy + ch + 2);
     if (cmap === "rdbu") { ctx.textAlign = "center"; ctx.fillText("0", ml + pw / 2, cy + ch + 2); }
@@ -114,7 +114,7 @@
     var p = BL.PRESETS[key]; setInput(p.make(state.seed), key === "random" ? SHORT[key] + " #" + state.seed : SHORT[key], key);
   }
   function setInput(u, label, kind) {
-    state.input = { u: u, label: label, kind: kind }; updateInputNote(); drawInput(); $("run").disabled = state.busy;
+    state.input = { u: u, label: label, kind: kind }; updateInputNote(); drawInput(); $("run").disabled = state.busy || state.offline;
   }
   function updateInputNote() {
     var i = state.input, warn = $("input-warn"), note = $("input-note"); warn.hidden = true; warn.textContent = "";
@@ -198,7 +198,7 @@
   $("strip-why").addEventListener("click", function () { if (!state.why) return; var b = $("why-body"); b.textContent = ""; b.appendChild(state.why()); $("dlg-why").showModal(); });
 
   // ---------- running ----------
-  function setBusy(b) { state.busy = b; $("run").disabled = b || !state.input; $("run").setAttribute("aria-busy", b ? "true" : "false"); }
+  function setBusy(b) { state.busy = b; $("run").disabled = b || !state.input || state.offline; $("run").setAttribute("aria-busy", b ? "true" : "false"); }
   function errMsg(status, data) {
     var d = data && data.detail;
     if (status === 422 && Array.isArray(d) && d.length) return "The server rejected this wave: " + d.map(function (e) { return e.msg; }).join("; ");
@@ -288,10 +288,21 @@
   $("dl-csv").addEventListener("click", function () { var R = state.result; if (!R) return; download("burgers_result.csv", BL.csvFromResponse(R.resp, R.fno, R.solver), "text/csv"); });
 
   // ---------- model info + health ----------
+  function showOffline(why) {
+    state.offline = true; $("run").disabled = true;
+    var msg = location.protocol === "file:"
+      ? "You opened this file straight from disk. The AI runs on the server, so please open http://127.0.0.1:8000/ instead (start the server first if it is not running)."
+      : "This page cannot reach the Burgers server (" + why + "), so Predict is switched off. Start it with: python -m uvicorn app.main:app --port 8000, then open http://127.0.0.1:8000/";
+    setStrip("bad", msg);
+  }
   async function loadMeta() {
     var b = $("api-badge");
-    try { var h = await fetch("/health"); if (h.ok) { b.textContent = "Server: ready"; b.className = "badge ok"; } else { b.textContent = "Server: not ready"; b.className = "badge bad"; } }
-    catch (e) { b.textContent = "Server: unreachable"; b.className = "badge bad"; }
+    try {
+      var h = await fetch("/health");
+      if (h.ok) { b.textContent = "Server: ready"; b.className = "badge ok"; }
+      else if (h.status === 404 || h.status === 405) { b.textContent = "Server: not connected"; b.className = "badge bad"; showOffline("HTTP " + h.status); return; }
+      else { b.textContent = "Server: not ready"; b.className = "badge bad"; }
+    } catch (e) { b.textContent = "Server: unreachable"; b.className = "badge bad"; showOffline("network error"); return; }
     try {
       var r = await fetch("/model-info"); if (!r.ok) throw new Error("HTTP " + r.status); state.model = await r.json(); BL.setTrainMaxAbs(state.model.runtime.ood_train_range.max_abs.max); updateInputNote(); drawInput();
     } catch (e) { state.modelErr = e.message; }

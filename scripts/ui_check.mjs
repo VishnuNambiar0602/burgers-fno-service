@@ -33,13 +33,15 @@ ws.addEventListener("message", m => { const d = JSON.parse(m.data); if (d.id && 
 const send = (method, params = {}) => new Promise(res => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
 const ev = async expr => { const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true }); if (r.result.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails)); return r.result.result.value; };
 async function shot(file, beyond = false) { const r = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: beyond }); fs.writeFileSync(path.join(outdir, file), Buffer.from(r.result.data, "base64")); }
-async function open(url, w, h, mobile, scheme) {
-  await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: mobile ? 2 : 1, mobile });
+async function open(url, w, h, mobile, scheme, dpr) {
+  await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: dpr || (mobile ? 2 : 1), mobile });
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme || "light" }] });
   await send("Page.navigate", { url }); await sleep(800);
   for (let i = 0; i < 40; i++) { if (await ev("document.readyState") === "complete") break; await sleep(250); }
   await sleep(500);
 }
+const styled = () => ev("(function(){var r=getComputedStyle(document.querySelector('#run')),d=getComputedStyle(document.querySelector('.dash'));return {runBg:r.backgroundColor,runRadius:r.borderTopLeftRadius,dash:d.display,bodyBg:getComputedStyle(document.body).backgroundColor}})()");
+const styledOk = s => s.dash === "grid" && s.runRadius !== "0px" && s.runBg !== "rgb(239, 239, 239)" && s.runBg !== "rgba(0, 0, 0, 0)";
 const stripState = () => ev("document.getElementById('strip').className + '|' + document.getElementById('strip-text').textContent");
 async function waitDone() {
   for (let i = 0; i < 120; i++) { const s = await stripState(); if (!s.startsWith("strip busy")) return s; await sleep(500); }
@@ -53,7 +55,22 @@ const fitOk = f => f.scrollH <= f.innerH + 1 && f.scrollW <= f.clientW + 1 && f.
 
 try {
   await send("Page.enable"); await send("Runtime.enable");
-  if (scenario === "error") {
+  if (scenario === "matrix") {
+    // realistic browser windows: viewport = screen minus toolbars, divided by the Windows scaling factor
+    for (const [w, h, d, name] of [[1920, 950, 1, "1080p_100pct"], [1536, 730, 1.25, "1080p_125pct"], [1280, 600, 1.5, "1080p_150pct"], [1366, 650, 1, "laptop_768"], [1280, 560, 1, "short_window"], [1024, 640, 1, "narrow_1024"], [1100, 520, 1, "very_short"], [900, 600, 1, "min_desktop_width"], [1280, 500, 1.5, "tiny_window"]]) {
+      await open(base + "/?preset=bump&run=1", w, h, false, "light", d); const s = await waitDone(); await sleep(500);
+      const f = await fit(); check(`matrix_${name}_${w}x${h}@${d}`, /^strip (good|warn)\|/.test(s), { fits: fitOk(f), ...f });
+      await shot(`ui_matrix_${name}.png`);
+    }
+  } else if (scenario === "offline") {
+    // the page opened WITHOUT the API behind it (file:// or an editor preview): it must still be styled and must say what is wrong
+    await open(base, 1366, 768, false, "light"); await sleep(1500);
+    const st = await styled(); check("offline_page_is_styled", styledOk(st), st);
+    const s = await stripState(); check("offline_strip_explains_how_to_connect", /^strip bad\|/.test(s) && /127\.0\.0\.1:8000/.test(s), s);
+    check("offline_predict_disabled", await ev("document.getElementById('run').disabled===true"));
+    check("offline_presets_still_render", await ev("document.querySelectorAll('button.pre').length===8"));
+    await shot("ui_offline_notice.png");
+  } else if (scenario === "error") {
     await open(base + "/?preset=sine&run=1", 1366, 768, false);
     const s = await waitDone();
     check("error_strip_shows_problem", /^strip bad\|/.test(s) && /not available|server/i.test(s), s);
@@ -61,6 +78,8 @@ try {
     check("error_maps_are_placeholders_not_data", (await nonBlank("hm-fno")) < 30, await nonBlank("hm-fno"));   // text only; a real map has 200+ colours
     await shot("ui_error_state.png");
   } else {
+    await open(base + "/", 1366, 768, false, "light");
+    const st0 = await styled(); check("stylesheet_applied", styledOk(st0), st0);
     // ---- 1. one screen, no scrolling, at four common desktop sizes, before and after a run
     for (const [w, h] of [[1920, 1080], [1440, 900], [1366, 768], [1280, 720]]) {
       await open(base + "/", w, h, false, "light");
