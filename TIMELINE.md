@@ -45,3 +45,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-11 10:30 IST: M7 recorded as a deferred PLAN (docs/M7_plan.md) at the user's request: local flux-form time-stepper with rollout training on broad solver-generated data; success criteria fixed in advance. Not started. Tests are not being run until the user says so.
 - 2026-11-11 10:46 IST: Added PDF report, MCP server (/mcp, /agent.json) and the Agent-mode toggle. Syntax/import checks only; tests written but not run (user's instruction).
 - 2026-11-12 00:29 IST: Tests 61/62 pass (see WORKLOG). M4 BEHIND (no public URL; local only). M6 due 09:03.
+- 2026-11-12 00:38 IST: 62/62 tests pass; main pushed to GitHub. M4 (public live URL) still not met; M6 open.
