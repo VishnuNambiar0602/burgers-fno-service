@@ -13,7 +13,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | 2026-11-09 23:09 (T+8h05m) | DONE |
 | M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | 2026-11-11 09:25 (local only) | PARTIAL: runs locally and verified; no public URL (HF 402) |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | 2026-11-10 09:03 (T+18h) | DONE locally (not deployed) |
-| M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | | README drafted; live verification blocked by M4 |
+| M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | 2026-11-12 08:19 (T+65h15m) | DONE locally: 62/62 tests, live-vs-offline PASS (local, 7.32e-07), README final, pushed. Live public URL not met (M4). |
 | Buffer (no new features) | T+72 | 2026-11-12 15:03 | - | | - |
 | M7 (plan, deferred by user) Local-rule time-stepper for unseen waves | - | - | ~2.5 (est.) | | EXPLORATORY RESULT: mixed, pre-registered criterion not met; not deployed; see README 11b and docs/M7_plan.md |
 
@@ -47,3 +47,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-12 00:29 IST: Tests 61/62 pass (see WORKLOG). M4 BEHIND (no public URL; local only). M6 due 09:03.
 - 2026-11-12 00:38 IST: 62/62 tests pass; main pushed to GitHub. M4 (public live URL) still not met; M6 open.
 - 2026-11-12 08:16 IST: M7 evaluated: mixed result, criterion not met, not deployed (README 11b). M6 finalisation (README, full tests, commit, push) in progress.
+- 2026-11-12 08:19 IST: M6 DONE (local verification only): 62/62 tests pass, live_check PASS against the local server (max abs diff 7.32e-07), README final, main pushed (2e9a219). Public URL (M4) still not met.
