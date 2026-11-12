@@ -4,9 +4,8 @@ PDE solutions as a service: a Fourier Neural Operator (FNO) trained on a PDEBenc
 FastAPI app with a built-in web page. You give it an initial condition; it returns the solution over time, next to a
 numerical solver's solution, an error map, and a warning when the input is outside what the model was trained on.
 
-> **Status (12 Nov 2026):** the model, API, web page, PDF report, MCP server and Agent mode work **locally** (and the API in a local Docker container, tested on 10 Nov).
-> **62 automated tests pass** (12 Nov). It is **not deployed**: Hugging Face now requires a paid PRO subscription for Docker Spaces on the free CPU tier (the API
-> returned `402 Payment Required`), and I did not pay or switch hosts without the owner's decision. There is **no live URL**. See [Deployment](#10-deployment).
+> **Live: https://burgers-fno-service.onrender.com** (Render free web service). Live check on 12 Nov 2026 10:30 IST: **PASS**, the served output matches the original training checkpoint to 7.9e-07 (see [Deployment](#10-deployment)).
+> The model, API, web page, PDF report, MCP server and Agent mode also work locally; **62 automated tests pass** (12 Nov). Hugging Face was tried first and refused (`402 Payment Required`: Docker Spaces on the free CPU tier now need a PRO subscription).
 > An exploratory follow-up (M7, a local-rule time-stepper for unseen waves) gave a **mixed result and is not deployed**: see [section 11b](#11b-m7-exploratory-a-local-rule-time-stepper-not-deployed-mixed-result).
 
 ## 1. The problem and the equation
@@ -139,10 +138,10 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 
 | Verified (evidence in this repo) | Not verified |
 |---|---|
-| Dataset size and md5; split disjointness; no near-duplicate initial conditions | **Any live deployment** (none exists) |
+| Dataset size and md5; split disjointness; no near-duplicate initial conditions | Cold-start time after the free tier's idle sleep (the service was already warm during the live check); Render's current free-tier terms |
 | Equation convention (nu/pi) against the data | **Published comparison**: no reliable like-for-like numbers found. A garbled table suggested PDEBench FNO nRMSE about 7.8e-3 and U-Net about 0.22 for nu = 0.01, but the labelling is doubtful and the protocols differ (autoregressive, more data, 1024 points). See `reports/published_comparison.md`. **Check the PDEBench appendix yourself before quoting any comparison.** |
 | Test-set errors, 3 seeds, one evaluation | Behaviour at other viscosities or other initial-condition families |
-| API matches the offline checkpoint (max abs difference 7e-7 locally and in Docker) | Latency and memory on a free cloud host (laptop numbers only) |
+| API matches the offline checkpoint (max abs difference 7e-7 locally and in Docker) | Memory use on Render (not visible to me); the live latency figures are one run from one network |
 | Dashboard in a real Chromium browser (Edge, headless, 47 checks): fits **one screen with no scrolling** at 1920x1080, 1440x900, 1366x768 and 1280x720, before and after a run, with no clipped panel; all explanations only inside dialogs (9 help topics open, close with Esc and return focus); run, amber/red warning strip, mouse drawing, advanced dialog, CSV/JSON downloads, error state; 375 px phone width without sideways overflow (it scrolls vertically there) | Firefox, Safari, touch input, screen readers |
 | WCAG AA contrast of the colour tokens (computed) | Colour-blind simulation of the heatmaps |
 | Docker image builds and runs locally (319 MB, 183 MiB memory in use) | `deploy/Dockerfile.render` and `render.yaml` (not built or tested) |
@@ -207,8 +206,13 @@ pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not h
   `402 Payment Required` ("hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription"). Nothing was created. The script
   and `deploy/Dockerfile` are ready; the Docker image was built and passed a live check locally (live-vs-offline max abs difference 7.77e-7). A Static
   Space is free but cannot run this API.
-- **Render (free web service):** `render.yaml` and `deploy/Dockerfile.render` are prepared. On 12 Nov the Dockerfile was built and run locally with `PORT=10000` (health ok, live-vs-offline max abs difference 7.88e-07, MCP tool list returned, page served, 184 MiB memory); **Render itself has not been tested by me.** It needs this repository on GitHub (not pushed). Reported free-tier
-  limits from web searches, **unverified**: 512 MB RAM (one source says 256 MB), 0.1 CPU, spin-down after 15 minutes idle, about a minute to wake. The container used 183 MiB.
+- **Render (free web service): LIVE at https://burgers-fno-service.onrender.com**, deployed by the owner from this repository's `render.yaml` and `deploy/Dockerfile.render`.
+  The Dockerfile was first built and run locally with `PORT=10000` (health ok, max abs difference 7.88e-07, 184 MiB). **Live check, 12 Nov 10:30 IST** (`reports/live_check_render.json`):
+  `/health` ok; the served weights hash equals the local file; **live output vs the original training checkpoint: max abs difference 7.94e-07**; error against the stored truth 0.01179 for both;
+  MCP `tools/list` and `predict` work over the public URL; a foreign browser `Origin` is rejected (HTTP 403).
+  Latency from my network: `/predict` about 2.2 s median (a 464 kB response; the model itself takes 3.6 ms), and **with the solver about 9.2 s** (the solver took 5.2 to 6.0 s on the free tier's small CPU share, 1 thread, against 0.5 s locally).
+  Cold start after the idle sleep was **not measured** (the service was warm). Free-tier limits from web searches, **unverified**: 512 MB RAM (one source says 256 MB), a small CPU share, spin-down after about 15 minutes idle, about a minute to wake.
+  **The public service has no login**, and each forecast costs CPU (more with the solver); anyone with the URL can call it. Pushing to `main` redeploys it.
 - **Local Docker:** `docker build -f deploy/Dockerfile -t burgers-fno <staged folder from scripts/deploy_hf.py --dry-run>`, then `python scripts/live_check.py http://127.0.0.1:<port>`.
 - `scripts/live_check.py <url>` is the end-to-end check to run against any deployment: it compares the served output with the original training checkpoint's output.
 

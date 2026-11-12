@@ -1,0 +1,24 @@
+{
+ "base": "https://burgers-fno-service.onrender.com",
+ "time": "2026-11-12 10:30:50 +0530",
+ "row": 7,
+ "health": {
+  "status": "ok",
+  "model_loaded": true,
+  "uptime_s": 152.9
+ },
+ "served_sha256": "21e63e824e5dc2183ebf7d577190f3c011726cc3e24c07eaa7b36a9c7ee0d07f",
+ "local_sha256": "21e63e824e5dc2183ebf7d577190f3c011726cc3e24c07eaa7b36a9c7ee0d07f",
+ "predict_http_ms_first": 2327.247300000181,
+ "predict_http_ms_median_of_rest": 2166.406299999835,
+ "response_bytes": 463641,
+ "max_abs_diff_live_vs_offline": 7.941818237489073e-07,
+ "relL2_live_vs_offline": 9.934555013293304e-07,
+ "relL2_live_vs_truth": 0.011789529225633104,
+ "relL2_offline_vs_truth": 0.011789525707340522,
+ "ood": false,
+ "solver_http_ms": 9170.957700000145,
+ "solver_seconds_server": 5.238599406555295,
+ "relL2_solver_vs_truth": 0.0038045945123659107,
+ "PASS": true
+}

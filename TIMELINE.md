@@ -11,7 +11,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | M1 Data inspected, split, validated | T+14 | 2026-11-10 05:03 | ~3 | 2026-11-09 20:07 (T+5h03m) | DONE |
 | M2 Baselines, FNO trained, evaluated, physics checks | T+30 | 2026-11-10 21:03 | ~8 | 2026-11-09 21:13 (T+6h09m) | DONE (kept models; extra validation 23:03) |
 | M3 FastAPI backend working locally | T+38 | 2026-11-11 05:03 | ~3 | 2026-11-09 23:09 (T+8h05m) | DONE |
-| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | 2026-11-11 09:25 (local only) | PARTIAL: runs locally and verified; no public URL (HF 402) |
+| M4 Skeleton deploy, live URL with real inference | T+44 | 2026-11-11 11:03 | ~2 | 2026-11-12 10:31 (T+67h27m, 23h28m late) | DONE: https://burgers-fno-service.onrender.com, live-vs-offline PASS (7.94e-07) |
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | 2026-11-10 09:03 (T+18h) | DONE locally (not deployed) |
 | M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | 2026-11-12 08:19 (T+65h15m) | DONE locally: 62/62 tests, live-vs-offline PASS (local, 7.32e-07), README final, pushed. Live public URL not met (M4). |
 | Buffer (no new features) | T+72 | 2026-11-12 15:03 | - | | - |
@@ -48,3 +48,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-12 00:38 IST: 62/62 tests pass; main pushed to GitHub. M4 (public live URL) still not met; M6 open.
 - 2026-11-12 08:16 IST: M7 evaluated: mixed result, criterion not met, not deployed (README 11b). M6 finalisation (README, full tests, commit, push) in progress.
 - 2026-11-12 08:19 IST: M6 DONE (local verification only): 62/62 tests pass, live_check PASS against the local server (max abs diff 7.32e-07), README final, main pushed (2e9a219). Public URL (M4) still not met.
+- 2026-11-12 10:31 IST: M4 DONE (late): live on Render, https://burgers-fno-service.onrender.com. live_check PASS (max abs diff 7.94e-07, same weights hash), MCP + agent.json + origin check work publicly. /predict about 2.2 s, with solver about 9.2 s on the free tier.
