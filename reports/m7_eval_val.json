@@ -1,0 +1,177 @@
+{
+ "PDEBench validation (500)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.027653671716925395,
+   "median": 0.021606815779737856,
+   "p90": 0.055775682615880694,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.006225634077130578
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.02268113252101714,
+   "p90": 0.043217159100138576,
+   "n_nonfinite": 2,
+   "mass_drift_mean": 1.5794608156141485e-08
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.026915783903704568,
+   "median": 0.02268113252101714,
+   "p90": 0.042476979093588774,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.0007851070880617153
+  }
+ },
+ "held-out, TRAIN styles (500)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.09647592797191393,
+   "median": 0.07012895094839014,
+   "p90": 0.21177394429866161,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.018954426742593563
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.035494510953426095,
+   "p90": 0.06823980234262021,
+   "n_nonfinite": 29,
+   "mass_drift_mean": 1.4230102645651311e-08
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.09071017691018923,
+   "median": 0.035080346486806226,
+   "p90": 0.06313549969797713,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.019164108487823094
+  }
+ },
+ "UNSEEN gp (200)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.1184772683944672,
+   "median": 0.08518426752062766,
+   "p90": 0.24774501629600132,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.02145589947342806
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.03798525268303435,
+   "p90": 0.05925363402357309,
+   "n_nonfinite": 2,
+   "mass_drift_mean": 9.8265293545272e-09
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.07502629145479699,
+   "median": 0.03798525268303435,
+   "p90": 0.05925363402357309,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.0011404958063306481
+  }
+ },
+ "UNSEEN saw (200)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.1392599209762857,
+   "median": 0.08428327722695018,
+   "p90": 0.360162946826748,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.01891625679375034
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.04190835098101262,
+   "p90": 0.23611614600281816,
+   "n_nonfinite": 18,
+   "mass_drift_mean": 1.3057528899399325e-08
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.36767561004781074,
+   "median": 0.04148087984786681,
+   "p90": 0.18056718300017272,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.023135713446245047
+  }
+ },
+ "UNSEEN fm (200)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.11774211833447147,
+   "median": 0.08550786705383231,
+   "p90": 0.23764817236701694,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.021648276196827538
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.03466457435234248,
+   "p90": 0.06548205195223866,
+   "n_nonfinite": 4,
+   "mass_drift_mean": 1.581448753357535e-08
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.04052185755997205,
+   "median": 0.03428015302849126,
+   "p90": 0.0663222692623895,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.002034557220897213
+  }
+ },
+ "UNSEEN packet (200)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.11596715664033272,
+   "median": 0.09463878450296803,
+   "p90": 0.21736009265345507,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.019497804661044036
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.03582411045819259,
+   "p90": 0.05326613096202294,
+   "n_nonfinite": 2,
+   "mass_drift_mean": 9.294287377884996e-09
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.058484732510583684,
+   "median": 0.03582411045819259,
+   "p90": 0.053234957601025534,
+   "n_nonfinite": 0,
+   "mass_drift_mean": 0.0015239429742794285
+  }
+ },
+ "UNSEEN pooled (800)": {
+  "FNO seed 1 (deployed)": {
+   "mean": 0.12286161608638928,
+   "median": 0.08619544256366675,
+   "p90": 0.27516789308538564
+  },
+  "M7 FluxStepper": {
+   "mean": Infinity,
+   "median": 0.036487149893836654,
+   "p90": 0.07751488191572349
+  },
+  "M7 FluxStepper (clamped)": {
+   "mean": 0.13542712289329087,
+   "median": 0.036355126803225175,
+   "p90": 0.07411505081816429
+  }
+ },
+ "timing_cpu_4_threads": {
+  "FNO seed 1 (deployed)": {
+   "one_wave_ms": 3.494060000002719,
+   "batch32_ms_per_wave": 0.4042656250007326
+  },
+  "M7 FluxStepper": {
+   "one_wave_ms": 125.98568000000796,
+   "batch32_ms_per_wave": 19.97825937499975
+  },
+  "M7 FluxStepper (clamped)": {
+   "one_wave_ms": 104.02668000000403,
+   "batch32_ms_per_wave": 19.78625937499956
+  }
+ },
+ "m7_checkpoint": {
+  "path": "checkpoints/m7_s0/best.pt",
+  "iter": 4500,
+  "val_pde_rollout": 0.028276514261960983,
+  "val_style_rollout": 0.08595937490463257
+ }
+}

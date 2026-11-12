@@ -4,10 +4,10 @@ PDE solutions as a service: a Fourier Neural Operator (FNO) trained on a PDEBenc
 FastAPI app with a built-in web page. You give it an initial condition; it returns the solution over time, next to a
 numerical solver's solution, an error map, and a warning when the input is outside what the model was trained on.
 
-> **Status (10 Nov 2026):** the model, API and web page work **locally and in a local Docker container**. It is
-> **not deployed**: Hugging Face now requires a paid PRO subscription for Docker Spaces on the free CPU tier (the API
-> returned `402 Payment Required`), and I did not pay or switch hosts without you. There is **no live URL** yet.
-> See [Deployment](#deployment).
+> **Status (12 Nov 2026):** the model, API, web page, PDF report, MCP server and Agent mode work **locally** (and the API in a local Docker container, tested on 10 Nov).
+> **62 automated tests pass** (12 Nov). It is **not deployed**: Hugging Face now requires a paid PRO subscription for Docker Spaces on the free CPU tier (the API
+> returned `402 Payment Required`), and I did not pay or switch hosts without the owner's decision. There is **no live URL**. See [Deployment](#10-deployment).
+> An exploratory follow-up (M7, a local-rule time-stepper for unseen waves) gave a **mixed result and is not deployed**: see [section 11b](#11b-m7-exploratory-a-local-rule-time-stepper-not-deployed-mixed-result).
 
 ## 1. The problem and the equation
 
@@ -146,8 +146,8 @@ Details in `reports/validate_m2.txt` and `reports/ood_eval.txt`; FNO error again
 | Dashboard in a real Chromium browser (Edge, headless, 47 checks): fits **one screen with no scrolling** at 1920x1080, 1440x900, 1366x768 and 1280x720, before and after a run, with no clipped panel; all explanations only inside dialogs (9 help topics open, close with Esc and return focus); run, amber/red warning strip, mouse drawing, advanced dialog, CSV/JSON downloads, error state; 375 px phone width without sideways overflow (it scrolls vertically there) | Firefox, Safari, touch input, screen readers |
 | WCAG AA contrast of the colour tokens (computed) | Colour-blind simulation of the heatmaps |
 | Docker image builds and runs locally (319 MB, 183 MiB memory in use) | `deploy/Dockerfile.render` and `render.yaml` (not built or tested) |
-| 38 automated tests | Bitwise reproducibility across GPUs |
-| (see section 8b) | MCP endpoint, Agent mode toggle, PDF report: written and syntax-checked only; tests exist but have not been run |
+| 62 automated tests, all passing (12 Nov) | Bitwise reproducibility across GPUs |
+| MCP endpoint, Agent mode toggle and PDF report: covered by automated tests (MCP protocol, run CSV, Agent-mode on/off removes everything, PDF structure and attachments) and tried by hand by the owner | The PDF was not opened in a PDF viewer by me; no real third-party MCP client was used |
 
 ## 7. Speed and memory (this laptop: i7-13650HX, RTX 4050 Laptop 6 GB, 15.6 GB RAM)
 
@@ -169,7 +169,7 @@ GET  /model-info    GET /health    GET /api
 `/predict` returns `x`, `t`, `fno.u` (201 x nx), optionally `solver.u`, `ood` (`is_ood`, `reasons`, features), and model identification
 (weights sha256). Inputs must be finite, |u0| <= 100, length 256 or 512; otherwise HTTP 422.
 
-## 8b. For agents, and the PDF report (added 11 Nov; written and syntax-checked only, NOT yet run)
+## 8b. For agents, and the PDF report (added 11 Nov; automated tests pass)
 
 - **Agent mode.** The header button *Agent mode* (or `/?mode=agent`) turns the dashboard into a machine-readable view: the manifest and the live state as JSON data blocks, the tool list with JSON Schemas,
   endpoint examples, and a form that calls the MCP endpoint. Nothing machine-oriented exists in the normal page: the code (`app/static/agent.js`) is fetched only when the mode is switched on and everything it adds is removed when it is switched off.
@@ -179,7 +179,7 @@ GET  /model-info    GET /health    GET /api
   (for Claude Code: `claude mcp add --transport http burgers http://127.0.0.1:8000/mcp`; not tried with a real client yet).
 - **Download PDF.** Builds, in the browser and without a library, a PDF of the dashboard as seen (page 1, redrawn in a light print palette), then the numbers as searchable text (key numbers, warnings, the 256 input values, snapshots at five times),
   with the **complete CSV and JSON attached inside the PDF** (open the viewer's attachments panel). Text pages use plain ASCII (the PDF base fonts have no Greek letters); page 1 keeps the symbols.
-- **Status.** Tests were written (`tests/test_mcp.py`, `tests/test_agent_features.py`, `node scripts/ui_check.mjs <url> <dir> features`) but **have not been run** at the user's request; the PDF writer and the MCP endpoint are unverified until they pass and the PDF is opened in a real viewer.
+- **Status.** `tests/test_mcp.py`, `tests/test_agent_features.py` and the `features` browser scenario pass (62/62 overall on 12 Nov). The PDF structure is checked (header, two embedded files, pages, JPEG image) but I did not open it in a viewer; the owner tried the features by hand.
 
 ## 9. Setup (Windows, Python 3.13) and reproduction
 
@@ -212,6 +212,35 @@ pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not h
 - **Local Docker:** `docker build -f deploy/Dockerfile -t burgers-fno <staged folder from scripts/deploy_hf.py --dry-run>`, then `python scripts/live_check.py http://127.0.0.1:<port>`.
 - `scripts/live_check.py <url>` is the end-to-end check to run against any deployment: it compares the served output with the original training checkpoint's output.
 
+## 11b. M7: exploratory, a local-rule time-stepper (NOT deployed, mixed result)
+
+**Idea.** Instead of mapping a whole wave to the whole solution in one shot, learn a *local* rule: a small periodic CNN (26,145 parameters, sees 25 neighbouring cells) predicts the flux between cells,
+added to a Rusanov+diffusion baseline, and the wave is stepped forward 200 times (`src/m7_model.py`). The update is a difference of face fluxes, so **total mass is conserved to round-off by construction**.
+Trained with rollout (unrolled) loss, 1 then 4 then 8 steps, on the 4,000 PDEBench trajectories plus **10,000 trajectories generated with our own solver** (five wave styles; **their labels are our solver's, not PDEBench's**).
+Four wave styles were never used for training or checkpoint choice (smooth random fields `gp`, sawtooth/triangle `saw`, frequency-modulated `fm`, localised wave packets `packet`) to test generalisation to unseen waves.
+
+**Setup caveats.** One seed. Training diverged to NaN in the 8-step stage after about iteration 5,000 and the run was then killed by a session break; the evaluated checkpoint is **iteration 4,500**, chosen on PDEBench validation plus held-out waves of the training styles only.
+The control experiment (the one-shot FNO retrained on the same data, `scripts/m7_fno_aug.py`) was **not run**, so I cannot say whether any gain comes from the design or just from the broader data. The PDEBench test set was **not** touched. Truth for generated waves is our solver at 256 cells.
+
+**Result** (relative L2 over (t, x); mean / median / 90th percentile; M7 = with the maximum-principle clamp, see below; `reports/m7_eval_val.json`):
+
+| set | deployed FNO (seed 1) | M7 |
+|---|---|---|
+| PDEBench validation (500) | 0.0277 / 0.0216 / 0.056 | 0.0269 / 0.0227 / 0.042 |
+| held-out, training styles (500) | 0.0965 / 0.0701 / 0.212 | 0.0907 / 0.0351 / 0.063 |
+| UNSEEN gp (200) | 0.1185 / 0.0852 / 0.248 | 0.0750 / 0.0380 / 0.059 |
+| UNSEEN saw (200) | 0.1393 / 0.0843 / 0.360 | **0.3677** / 0.0415 / 0.181 |
+| UNSEEN fm (200) | 0.1177 / 0.0855 / 0.238 | 0.0405 / 0.0343 / 0.066 |
+| UNSEEN packet (200) | 0.1160 / 0.0946 / 0.217 | 0.0585 / 0.0358 / 0.053 |
+| **UNSEEN pooled (800)** | **0.1229** / 0.0862 / 0.275 | **0.1354** / 0.0364 / 0.074 |
+
+**Verdict against the criterion fixed before running** (lower mean error than the FNO on the pooled unseen styles AND within about 1.5x of its PDEBench validation error): the second part is met, the first is **not met** (0.1354 vs 0.1229).
+The picture is mixed rather than a failure: on a *typical* unseen wave M7 is about 2.4x better (median 0.0364 vs 0.0862) and its 90th percentile is about 3.7x lower, and it conserves mass to about 1e-8 (the FNO drifts by 6e-3 to 2e-2).
+But the **unclamped** rollout blows up on a few percent of waves (non-finite for 2 of 500 PDEBench validation waves, 29 of 500 held-out training-style waves, 18 of 200 sawtooth waves). The clamp (viscous Burgers obeys a maximum principle: u stays within the range of the initial wave, so clamping is physically valid)
+prevents infinities, but those waves are then simply wrong, which inflates the mean (sawtooth: 0.3677), and the clamped run no longer conserves mass exactly on those cases. M7 is also slower on CPU: about 104 to 126 ms for one wave (4 threads; about 20 ms each in a batch of 32) versus 3.5 ms for the FNO and 0.4 to 0.8 s for the solver.
+
+**Conclusion.** Promising on typical unseen waves, not robust enough to deploy: it needs training stabilisation (the 8-step stage diverged) and a proper control. Nothing in the app uses it. Plan and results: `docs/M7_plan.md`, `reports/m7_eval_val.json`, `reports/m7_train_log.txt`.
+
 ## 11. Limits of this work
 
 - **Time:** a 72-hour window (start 9 Nov 15:03 IST) with limited hands-on time; M0-M3 and the front end were finished ahead of the plan, deployment was blocked by hosting cost.
@@ -223,8 +252,8 @@ pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not h
 
 ```
 app/            FastAPI app and static web page (index.html, app.js, lib.js, style.css)
-src/            models.py, solver.py, data.py, inference.py
-scripts/        download, subset, train, evaluate, validation, benchmarks, deploy, browser checks
+src/            models.py, solver.py, data.py, inference.py (+ M7: m7_model.py, wavegen.py)
+scripts/        download, subset, train, evaluate, validation, benchmarks, deploy, browser checks, M7 (m7_gen_data / m7_train / m7_eval / m7_fno_aug)
 tests/          pytest (API, front end, contrast, solver/data) and tests/js (Node unit tests)
 model/          packaged FNO (seed 1), OOD statistics, model card (all numbers read from reports/)
 reports/        all measured results, screenshots; splits/ the split file; docs/ a plain-English explainer

@@ -1,0 +1,40 @@
+2026-11-12 01:12:19 START args={"name": "m7_s0", "stages": "1:2000,4:5000,8:9000", "batch": 64, "lr": 0.002, "ch": 32, "layers": 6, "seed": 0, "n_pdebench": 4000, "n_synth": 10000, "no_synth": false} params=26,145 receptive_field=25 device=cuda data: pdebench 4000 + synthetic 10000 = 14000 trajectories (2.88 GB on cuda)
+2026-11-12 01:12:52 it 250/9000 unroll=1 lr=2.00e-03 loss=0.00005 (0.6 min)
+2026-11-12 01:13:22 it 500/9000 unroll=1 lr=1.98e-03 loss=0.00055 (1.1 min)
+2026-11-12 01:14:18 VAL it 500: full 200-step rollout relL2  PDEBench-val 1.9980 | held-out train-style 2.9134 | selection 2.4557
+2026-11-12 01:14:45 it 750/9000 unroll=1 lr=1.97e-03 loss=0.00010 (2.4 min)
+2026-11-12 01:15:11 it 1000/9000 unroll=1 lr=1.94e-03 loss=0.00005 (2.9 min)
+2026-11-12 01:16:03 VAL it 1000: full 200-step rollout relL2  PDEBench-val 1.8304 | held-out train-style 2.6871 | selection 2.2587
+2026-11-12 01:16:28 it 1250/9000 unroll=1 lr=1.91e-03 loss=0.00095 (4.2 min)
+2026-11-12 01:16:54 it 1500/9000 unroll=1 lr=1.87e-03 loss=0.00003 (4.6 min)
+2026-11-12 01:17:50 VAL it 1500: full 200-step rollout relL2  PDEBench-val 1.8483 | held-out train-style 2.6839 | selection 2.2661
+2026-11-12 01:18:16 it 1750/9000 unroll=1 lr=1.82e-03 loss=0.03259 (6.0 min)
+2026-11-12 01:18:42 it 2000/9000 unroll=1 lr=1.77e-03 loss=0.00006 (6.4 min)
+2026-11-12 01:19:35 VAL it 2000: full 200-step rollout relL2  PDEBench-val 1.9992 | held-out train-style 2.9139 | selection 2.4566
+2026-11-12 01:21:23 it 2250/9000 unroll=4 lr=1.71e-03 loss=0.00056 (9.1 min)
+2026-11-12 01:23:14 it 2500/9000 unroll=4 lr=1.64e-03 loss=0.00028 (10.9 min)
+2026-11-12 01:24:06 VAL it 2500: full 200-step rollout relL2  PDEBench-val 0.3315 | held-out train-style 1.1656 | selection 0.7486
+2026-11-12 01:25:55 it 2750/9000 unroll=4 lr=1.58e-03 loss=0.00074 (13.6 min)
+2026-11-12 01:27:40 it 3000/9000 unroll=4 lr=1.50e-03 loss=0.00034 (15.3 min)
+2026-11-12 01:28:32 VAL it 3000: full 200-step rollout relL2  PDEBench-val 1.3359 | held-out train-style 2.1994 | selection 1.7676
+2026-11-12 01:30:24 it 3250/9000 unroll=4 lr=1.43e-03 loss=0.00015 (18.1 min)
+2026-11-12 01:32:10 it 3500/9000 unroll=4 lr=1.35e-03 loss=0.00047 (19.9 min)
+2026-11-12 01:33:03 VAL it 3500: full 200-step rollout relL2  PDEBench-val 0.1001 | held-out train-style 0.7159 | selection 0.4080
+2026-11-12 01:34:53 it 3750/9000 unroll=4 lr=1.26e-03 loss=0.00012 (22.6 min)
+2026-11-12 01:36:37 it 4000/9000 unroll=4 lr=1.18e-03 loss=0.00008 (24.3 min)
+2026-11-12 01:37:30 VAL it 4000: full 200-step rollout relL2  PDEBench-val 0.0356 | held-out train-style 0.1761 | selection 0.1058
+2026-11-12 01:39:21 it 4250/9000 unroll=4 lr=1.09e-03 loss=0.00014 (27.0 min)
+2026-11-12 01:41:11 it 4500/9000 unroll=4 lr=1.01e-03 loss=0.00010 (28.9 min)
+2026-11-12 01:42:10 VAL it 4500: full 200-step rollout relL2  PDEBench-val 0.0283 | held-out train-style 0.0860 | selection 0.0571
+2026-11-12 01:44:01 it 4750/9000 unroll=4 lr=9.19e-04 loss=0.00029 (31.7 min)
+2026-11-12 01:45:53 it 5000/9000 unroll=4 lr=8.33e-04 loss=0.00006 (33.6 min)
+2026-11-12 01:46:49 VAL it 5000: full 200-step rollout relL2  PDEBench-val 0.0257 | held-out train-style 0.2734 | selection 0.1495
+2026-11-12 01:50:41 it 5250/9000 unroll=8 lr=7.48e-04 loss=nan (38.4 min)
+2026-11-12 01:54:44 it 5500/9000 unroll=8 lr=6.65e-04 loss=nan (42.4 min)
+2026-11-12 01:55:44 VAL it 5500: full 200-step rollout relL2  PDEBench-val nan | held-out train-style nan | selection nan
+2026-11-12 01:59:35 it 5750/9000 unroll=8 lr=5.85e-04 loss=nan (47.3 min)
+2026-11-12 02:03:25 it 6000/9000 unroll=8 lr=5.08e-04 loss=nan (51.1 min)
+2026-11-12 02:04:18 VAL it 6000: full 200-step rollout relL2  PDEBench-val nan | held-out train-style nan | selection nan
+2026-11-12 02:08:09 it 6250/9000 unroll=8 lr=4.35e-04 loss=nan (55.8 min)
+2026-11-12 02:11:59 it 6500/9000 unroll=8 lr=3.66e-04 loss=nan (59.7 min)
+2026-11-12 02:12:55 VAL it 6500: full 200-step rollout relL2  PDEBench-val nan | held-out train-style nan | selection nan

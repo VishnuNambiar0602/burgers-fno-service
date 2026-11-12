@@ -15,7 +15,7 @@ Absolute clock times are provisional: they are pure elapsed-time conversions and
 | M5 Front end polish, solver comparison, OOD warnings | T+54 | 2026-11-11 21:03 | ~4 | 2026-11-10 09:03 (T+18h) | DONE locally (not deployed) |
 | M6 Final verification, README, cleanup, FINAL COMMIT | T+66 | 2026-11-12 09:03 | ~3 | | README drafted; live verification blocked by M4 |
 | Buffer (no new features) | T+72 | 2026-11-12 15:03 | - | | - |
-| M7 (plan, deferred by user) Local-rule time-stepper for unseen waves | - | - | ~2.5 (est.) | | PLANNED, not started; see docs/M7_plan.md (gates b and d when it starts) |
+| M7 (plan, deferred by user) Local-rule time-stepper for unseen waves | - | - | ~2.5 (est.) | | EXPLORATORY RESULT: mixed, pre-registered criterion not met; not deployed; see README 11b and docs/M7_plan.md |
 
 Cut list, in order (propose, user approves): (1) freehand drawing; (2) multiple viscosities; (3) UI polish; (4) extra architectures; (5) reduced training data / fewer epochs, documented honestly.
 Never cut: baseline, held-out evaluation, physics checks, live inference check, honest README.
@@ -46,3 +46,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-11 10:46 IST: Added PDF report, MCP server (/mcp, /agent.json) and the Agent-mode toggle. Syntax/import checks only; tests written but not run (user's instruction).
 - 2026-11-12 00:29 IST: Tests 61/62 pass (see WORKLOG). M4 BEHIND (no public URL; local only). M6 due 09:03.
 - 2026-11-12 00:38 IST: 62/62 tests pass; main pushed to GitHub. M4 (public live URL) still not met; M6 open.
+- 2026-11-12 08:16 IST: M7 evaluated: mixed result, criterion not met, not deployed (README 11b). M6 finalisation (README, full tests, commit, push) in progress.
