@@ -207,7 +207,7 @@ pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not h
   `402 Payment Required` ("hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription"). Nothing was created. The script
   and `deploy/Dockerfile` are ready; the Docker image was built and passed a live check locally (live-vs-offline max abs difference 7.77e-7). A Static
   Space is free but cannot run this API.
-- **Render (free web service), untested:** `render.yaml` and `deploy/Dockerfile.render` are prepared. It needs this repository on GitHub (not pushed). Reported free-tier
+- **Render (free web service):** `render.yaml` and `deploy/Dockerfile.render` are prepared. On 12 Nov the Dockerfile was built and run locally with `PORT=10000` (health ok, live-vs-offline max abs difference 7.88e-07, MCP tool list returned, page served, 184 MiB memory); **Render itself has not been tested by me.** It needs this repository on GitHub (not pushed). Reported free-tier
   limits from web searches, **unverified**: 512 MB RAM (one source says 256 MB), 0.1 CPU, spin-down after 15 minutes idle, about a minute to wake. The container used 183 MiB.
 - **Local Docker:** `docker build -f deploy/Dockerfile -t burgers-fno <staged folder from scripts/deploy_hf.py --dry-run>`, then `python scripts/live_check.py http://127.0.0.1:<port>`.
 - `scripts/live_check.py <url>` is the end-to-end check to run against any deployment: it compares the served output with the original training checkpoint's output.
