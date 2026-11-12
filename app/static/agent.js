@@ -41,7 +41,7 @@
   }
 
   function build() {
-    var base = location.origin + "/";
+    var base = location.origin + "/", mcpOn = !!(manifest && manifest.interfaces.mcp.enabled !== false);
     root.textContent = "";
     root.appendChild(el("h2", null, "Machine view"));
     root.appendChild(el("p", "note", "The same application in a form built for AI agents and scripts. Humans: switch Agent mode off (button in the header) to return to the dashboard."));
@@ -51,27 +51,34 @@
 
     root.appendChild(el("h3", null, "Connect"));
     var c = el("pre", "mjson"); c.setAttribute("data-agent-section", "connect");
-    c.textContent = ["MCP    POST " + base + "mcp   (Streamable HTTP, JSON-RPC 2.0, JSON responses, no sessions)",
-      "       client config: " + JSON.stringify({ mcpServers: { burgers: { url: base + "mcp" } } }),
-      "REST   POST " + base + "predict   body {\"u0\": [256 numbers], \"include_solver\": true}",
-      "Other  GET " + base + "agent.json (this manifest)   GET " + base + "openapi.json   GET " + base + "health   GET " + base + "model-info"].join("\n");
+    var lines = [];
+    if (mcpOn) {
+      lines.push("MCP    POST " + base + "mcp   (Streamable HTTP, JSON-RPC 2.0, JSON responses, no sessions)");
+      lines.push("       client config: " + JSON.stringify({ mcpServers: { burgers: { url: base + "mcp" } } }));
+    } else lines.push("MCP    switched off on this server (the operator can enable it with MCP_ENABLED=1); the REST API below still works");
+    lines.push("REST   POST " + base + "predict   body {\"u0\": [256 numbers], \"include_solver\": true}");
+    lines.push("Other  GET " + base + "agent.json (this manifest)   GET " + base + "openapi.json   GET " + base + "health   GET " + base + "model-info");
+    c.textContent = lines.join("\n");
     root.appendChild(c);
 
     if (manifest) {
       root.appendChild(el("h3", null, "Rules for agents"));
       var ul = el("ul"); manifest.rules_for_agents.forEach(function (r) { ul.appendChild(el("li", null, r)); }); root.appendChild(ul);
-      root.appendChild(el("h3", null, "Tools (MCP)"));
+      if (mcpOn) {
+        root.appendChild(el("h3", null, "Tools (MCP)"));
       var tbl = el("table", "mtable"), hd = el("tr"); ["name", "what it does", "arguments (JSON Schema)"].forEach(function (h) { hd.appendChild(el("th", null, h)); }); tbl.appendChild(hd);
       manifest.interfaces.mcp.tools.forEach(function (t) {
         var tr = el("tr"); tr.setAttribute("data-agent-tool", t.name);
         tr.appendChild(el("td", null, t.name)); tr.appendChild(el("td", null, t.description)); var td = el("td"); td.appendChild(el("code", null, JSON.stringify(t.inputSchema))); tr.appendChild(td); tbl.appendChild(tr);
       });
       var wrap = el("div", "tablewrap"); wrap.appendChild(tbl); root.appendChild(wrap);
+      }
     }
 
     root.appendChild(el("h3", null, "Current state of the page"));
     var sp = el("pre", "mjson"); sp.id = "agent-state-pre"; sp.setAttribute("data-agent-section", "state"); sp.tabIndex = 0; sp.textContent = pretty(snapshot()); root.appendChild(sp);
 
+    if (!mcpOn) { root.appendChild(el("p", "warn", "MCP is switched off on this server, so there are no tools to call here.")); return; }
     root.appendChild(el("h3", null, "Try it (calls the MCP endpoint above)"));
     var form = el("form", "aform"); form.id = "agent-form"; form.setAttribute("data-agent-form", "tool-call");
     var l1 = el("label", null, "Tool"); l1.setAttribute("for", "agent-tool");

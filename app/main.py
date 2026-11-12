@@ -6,6 +6,7 @@ GET /runs/{id}.csv. Interactive docs at /docs. The web page is served at /.
 """
 import hashlib
 import os
+import subprocess
 import time
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse
@@ -22,6 +23,7 @@ from starlette.concurrency import run_in_threadpool
 
 from src.inference import ALLOWED_NX, DT, NT, NU_EFF, load_json, load_model, ood_check, predict, self_check
 from src.solver import mass, solve
+from . import limits
 from . import mcp as mcp_server
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -32,10 +34,30 @@ PRESETS_PATH = os.environ.get("PRESET_ERRORS_PATH", os.path.join(ROOT, "model", 
 MAX_ABS_INPUT = 100.0   # hard input sanity bound, far above anything physical here; beyond it we refuse
 
 
+def mcp_enabled():
+    """The MCP endpoint is OFF unless MCP_ENABLED=1 (fail closed). Read on every request."""
+    return os.environ.get("MCP_ENABLED", "0") == "1"
+
+
+def _detect_commit():
+    """Which version is running: the platform's commit variable (Render sets RENDER_GIT_COMMIT), else git, else unknown."""
+    for key in ("RENDER_GIT_COMMIT", "GIT_COMMIT", "SOURCE_COMMIT"):
+        if os.environ.get(key):
+            return os.environ[key].strip(), key
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, timeout=3)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip(), "git"
+    except Exception:
+        pass
+    return "unknown", "none"
+
+
 @asynccontextmanager
 async def lifespan(app):
     torch.set_num_threads(int(os.environ.get("TORCH_THREADS", "2")))   # more threads were slower in the benchmark
     app.state.started = time.time()
+    app.state.commit, app.state.commit_source = _detect_commit()
     app.state.model = app.state.error = None
     app.state.measured = {}
     try:
@@ -92,11 +114,17 @@ def _round(a):
 
 def _model_info_dict():
     return {**app.state.card, "runtime": {"torch": torch.__version__, "device": "cpu", "threads": torch.get_num_threads(),
-                                         "served_sha256": app.state.sha, "ood_train_range": app.state.stats["train_range"]}}
+                                         "served_sha256": app.state.sha, "ood_train_range": app.state.stats["train_range"],
+                                         "commit": app.state.commit, "commit_source": app.state.commit_source}}
 
 
 def _compute(u0, include_solver):
     """The one place a forecast is computed; /predict and the MCP tools both use it, so they cannot disagree."""
+    with limits.Slot():                                    # raises limits.Busy when MAX_CONCURRENT forecasts are already running
+        return _compute_inner(u0, include_solver)
+
+
+def _compute_inner(u0, include_solver):
     u0 = np.asarray(u0, dtype=np.float64)
     nx = len(u0)
     t0 = time.perf_counter()
@@ -147,6 +175,18 @@ CSP = ("default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script
 
 
 @app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    if request.method == "POST" and request.url.path in ("/predict", "/mcp"):
+        ok, retry = limits.check(limits.client_key(request))
+        if not ok:
+            msg = f"Rate limit exceeded: at most {limits.limit_per_min()} requests per minute per client. Try again in {retry} s."
+            body = ({"jsonrpc": "2.0", "id": None, "error": {"code": -32000, "message": msg, "data": {"retry_after_s": retry}}} if request.url.path == "/mcp"
+                    else {"detail": msg, "retry_after_s": retry})
+            return JSONResponse(status_code=429, content=body, headers={"Retry-After": str(retry)})
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def security_headers(request: Request, call_next):
     resp = await call_next(request)
     resp.headers["X-Content-Type-Options"] = "nosniff"
@@ -172,14 +212,15 @@ def index():
 
 @app.get("/api")
 def api_root():
-    return {"service": "burgers-fno-service", "docs": "/docs", "ui": "/", "mcp": "/mcp", "agent_manifest": "/agent.json",
-            "endpoints": ["GET /health", "GET /model-info", "POST /predict", "POST /mcp", "GET /agent.json"]}
+    return {"service": "burgers-fno-service", "docs": "/docs", "ui": "/", "mcp": "/mcp" if mcp_enabled() else None, "agent_manifest": "/agent.json",
+            "endpoints": ["GET /health", "GET /model-info", "POST /predict", "GET /agent.json"] + (["POST /mcp"] if mcp_enabled() else [])}
 
 
 @app.get("/health")
 def health():
     ok = app.state.model is not None
-    body = {"status": "ok" if ok else "degraded", "model_loaded": ok, "uptime_s": round(time.time() - app.state.started, 1)}
+    body = {"status": "ok" if ok else "degraded", "model_loaded": ok, "uptime_s": round(time.time() - app.state.started, 1),
+            "commit": app.state.commit, "commit_source": app.state.commit_source}
     if not ok:
         raise HTTPException(status_code=503, detail={**body, "error": app.state.error})
     return body
@@ -194,7 +235,10 @@ def model_info():
 @app.post("/predict")
 def predict_endpoint(req: PredictRequest):
     _require_model()
-    r = _compute(req.u0, req.include_solver)
+    try:
+        r = _compute(req.u0, req.include_solver)
+    except limits.Busy:
+        raise HTTPException(status_code=429, detail="The server is busy with other forecasts. Try again in a few seconds.", headers={"Retry-After": "3"})
     out = {
         "x": _round(r["x"]), "t": _round(r["t"]),
         "fno": {"u": _round(r["u"]), "seconds": r["fno_s"], "mass_drift": r["mass_fno"]},
@@ -220,6 +264,8 @@ def _origin_ok(request: Request):
 
 @app.post("/mcp", include_in_schema=False)
 async def mcp_endpoint(request: Request):
+    if not mcp_enabled():
+        return JSONResponse(status_code=404, content={"detail": "MCP is switched off on this server (set MCP_ENABLED=1 to enable it)."})
     if not _origin_ok(request):
         return JSONResponse(status_code=403, content={"jsonrpc": "2.0", "id": None, "error": {"code": -32000, "message": "Origin not allowed"}})
     try:
@@ -236,12 +282,14 @@ async def mcp_endpoint(request: Request):
 @app.get("/mcp", include_in_schema=False)
 @app.delete("/mcp", include_in_schema=False)
 def mcp_no_stream():
+    if not mcp_enabled():
+        return JSONResponse(status_code=404, content={"detail": "MCP is switched off on this server (set MCP_ENABLED=1 to enable it)."})
     return Response(status_code=405, headers={"Allow": "POST"})       # no server-initiated stream and no sessions
 
 
 @app.get("/agent.json")
 def agent_manifest(request: Request):
-    return mcp_server.manifest(str(request.base_url), SVC)
+    return mcp_server.manifest(str(request.base_url), SVC, mcp_enabled())
 
 
 @app.get("/runs/{run_id}.csv", include_in_schema=False)

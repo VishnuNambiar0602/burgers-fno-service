@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from . import waves
+from . import limits, waves
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 SERVER_INFO = {"name": "burgers-fno-service", "title": "Burgers Wave Predictor", "version": "0.2.0"}
@@ -254,6 +254,8 @@ def _call_tool(params, svc):
         data = tool["fn"](params.get("arguments") or {}, svc)
     except ValueError as e:
         return {"content": [{"type": "text", "text": f"Invalid arguments: {e}"}], "isError": True}
+    except limits.Busy:
+        return {"content": [{"type": "text", "text": "The server is busy with other forecasts; try again in a few seconds."}], "isError": True}
     except Exception:                                    # never leak internals to a client
         return {"content": [{"type": "text", "text": "Internal error while running the tool."}], "isError": True}
     return {"content": [{"type": "text", "text": json.dumps(data, ensure_ascii=False, separators=(",", ":"))}], "structuredContent": data, "isError": False}
@@ -310,14 +312,14 @@ def run_csv(run):
     return "\n".join(lines)
 
 
-def manifest(base, svc):
+def manifest(base, svc, mcp_enabled=True):
     """Everything an agent needs to use this site, in one JSON document (served at /agent.json and shown by the page's Agent mode)."""
     return {
         "name": SERVER_INFO["title"], "version": SERVER_INFO["version"],
         "purpose": "Forecast how a wave evolves under 1D viscous Burgers (nu = 0.01) with a trained neural operator, next to a classic numerical solver, with trust warnings.",
         "instructions": INSTRUCTIONS,
         "interfaces": {
-            "mcp": {"url": base + "mcp", "transport": "streamable-http (JSON responses only, no sessions)", "protocolVersions": list(PROTOCOL_VERSIONS),
+            "mcp": {"enabled": False, "note": "MCP is switched off on this server (set MCP_ENABLED=1 to enable it). The REST API below still works."} if not mcp_enabled else {"enabled": True, "url": base + "mcp", "transport": "streamable-http (JSON responses only, no sessions)", "protocolVersions": list(PROTOCOL_VERSIONS),
                     "client_config_example": {"mcpServers": {"burgers": {"url": base + "mcp"}}},
                     "tools": public_tools(), "resources": [{"uri": u, "name": n, "mimeType": m} for u, (n, m, _) in resources(svc).items()]},
             "rest": {"openapi": base + "openapi.json", "docs": base + "docs",

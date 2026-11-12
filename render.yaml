@@ -1,4 +1,4 @@
-# Render blueprint (untested): free web service built from deploy/Dockerfile.render. Needs the repo on GitHub, which has not been pushed.
+# Render blueprint: free web service built from deploy/Dockerfile.render (live since 12 Nov 2026). Protection settings are documented in README section 10b.
 services:
   - type: web
     name: burgers-fno-service
@@ -7,3 +7,10 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /health
+    envVars:
+      - key: MCP_ENABLED
+        value: "1"          # the code default is OFF; this deployment opts in on purpose (read-only tools, same rate limit)
+      - key: RATE_LIMIT_PER_MIN
+        value: "20"
+      - key: MAX_CONCURRENT
+        value: "2"

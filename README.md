@@ -168,11 +168,13 @@ GET  /model-info    GET /health    GET /api
 `/predict` returns `x`, `t`, `fno.u` (201 x nx), optionally `solver.u`, `ood` (`is_ood`, `reasons`, features), and model identification
 (weights sha256). Inputs must be finite, |u0| <= 100, length 256 or 512; otherwise HTTP 422.
 
+`/health` and `/model-info` also report `commit` and `commit_source`: the version that is running (the platform's `RENDER_GIT_COMMIT`, else `git rev-parse HEAD`, else `unknown`). `POST /predict` and `POST /mcp` are rate-limited: a client over its allowance gets HTTP 429 with a `Retry-After` header (section 10b).
+
 ## 8b. For agents, and the PDF report (added 11 Nov; automated tests pass)
 
 - **Agent mode.** The header button *Agent mode* (or `/?mode=agent`) turns the dashboard into a machine-readable view: the manifest and the live state as JSON data blocks, the tool list with JSON Schemas,
   endpoint examples, and a form that calls the MCP endpoint. Nothing machine-oriented exists in the normal page: the code (`app/static/agent.js`) is fetched only when the mode is switched on and everything it adds is removed when it is switched off.
-- **MCP server** at `POST /mcp` (Model Context Protocol, Streamable HTTP, JSON-RPC 2.0, JSON responses, no sessions, no SDK; `app/mcp.py`). Tools (all read-only): `list_presets`, `make_wave`, `predict`, `get_profile`, `get_model_info`, `get_status`, `explain`;
+- **MCP server** at `POST /mcp`, **off by default** (set `MCP_ENABLED=1`; when off, `/mcp` answers 404 and `/agent.json` says MCP is off) (Model Context Protocol, Streamable HTTP, JSON-RPC 2.0, JSON responses, no sessions, no SDK; `app/mcp.py`). Tools (all read-only): `list_presets`, `make_wave`, `predict`, `get_profile`, `get_model_info`, `get_status`, `explain`;
   resources `burgers://model-card`, `burgers://limitations`, `burgers://guide`. `predict` returns a **verdict** (`good` / `warn` / `bad` / `unchecked` and `best_answer`: `ai` or `solver`), the warnings, timings, small profiles and a `run_id`; `GET /runs/{run_id}.csv` returns every number.
   Browser origins other than localhost are rejected (DNS-rebinding defence). Machine manifest: `GET /agent.json`. Example client entry: `{"mcpServers": {"burgers": {"url": "http://127.0.0.1:8000/mcp"}}}`
   (for Claude Code: `claude mcp add --transport http burgers http://127.0.0.1:8000/mcp`; not tried with a real client yet).
@@ -212,9 +214,24 @@ pydantic 2.14.3, pytest 9.2.0, huggingface_hub 2.4.0. The serving pins are not h
   MCP `tools/list` and `predict` work over the public URL; a foreign browser `Origin` is rejected (HTTP 403).
   Latency from my network: `/predict` about 2.2 s median (a 464 kB response; the model itself takes 3.6 ms), and **with the solver about 9.2 s** (the solver took 5.2 to 6.0 s on the free tier's small CPU share, 1 thread, against 0.5 s locally).
   Cold start after the idle sleep was **not measured** (the service was warm). Free-tier limits from web searches, **unverified**: 512 MB RAM (one source says 256 MB), a small CPU share, spin-down after about 15 minutes idle, about a minute to wake.
-  **The public service has no login**, and each forecast costs CPU (more with the solver); anyone with the URL can call it. Pushing to `main` redeploys it.
+  **The public service has no login**; it is protected only by the limits in section 10b. Pushing to `main` redeploys it.
 - **Local Docker:** `docker build -f deploy/Dockerfile -t burgers-fno <staged folder from scripts/deploy_hf.py --dry-run>`, then `python scripts/live_check.py http://127.0.0.1:<port>`.
 - `scripts/live_check.py <url>` is the end-to-end check to run against any deployment: it compares the served output with the original training checkpoint's output.
+
+## 10b. Protecting the public service (added 12 Nov 2026)
+
+The live site is open to anyone with the URL and has no login, so `app/limits.py` adds two limits (standard library only; tests in `tests/test_limits.py`):
+
+| setting (environment variable) | default | what it does |
+|---|---|---|
+| `RATE_LIMIT_PER_MIN` | **20** | per client, rolling 60 s, on `POST /predict` and `POST /mcp`; over the limit: HTTP 429 with `Retry-After` (JSON-RPC error `-32000` on `/mcp`); `0` switches it off |
+| `MAX_CONCURRENT` | **2** | forecasts computed at the same time, server-wide; a third gets HTTP 429 "busy" (`Retry-After: 3`) instead of queueing; `0` = unlimited |
+| `TRUST_PROXY` | 1 | identify clients by the first `X-Forwarded-For` address (needed behind Render's proxy); `0` = socket address |
+| `MCP_ENABLED` | **0 (off)** | the MCP endpoint answers 404 unless this is `1` |
+
+Why these values: a person pressing Predict with the solver on the free tier (about 9 s each) makes fewer than 7 requests a minute, and an agent run (initialize, list tools, one call) uses about 3, so 20 a minute leaves headroom for both and caps one client. At most 2 simultaneous forecasts keeps a small free-tier CPU from being swamped.
+MCP defaults to **off** because that is the safest default for a public service (fail closed); the Render deployment turns it on explicitly in `render.yaml` (read-only tools, the same limits apply).
+**Limits of these protections:** this is not authentication. The counters live in one process's memory (they reset on restart and are not shared between instances), and a client that reaches the server directly can fake `X-Forwarded-For`, so the concurrency cap is the backstop that cannot be bypassed. Nothing here defends against a determined attacker.
 
 ## 11b. M7: exploratory, a local-rule time-stepper (NOT deployed, mixed result)
 
@@ -255,7 +272,7 @@ prevents infinities, but those waves are then simply wrong, which inflates the m
 ## 12. Layout
 
 ```
-app/            FastAPI app and static web page (index.html, app.js, lib.js, style.css)
+app/            FastAPI app, rate limits (limits.py), MCP server (mcp.py), static web page (index.html, app.js, lib.js, style.css, agent.js, pdf.js)
 src/            models.py, solver.py, data.py, inference.py (+ M7: m7_model.py, wavegen.py)
 scripts/        download, subset, train, evaluate, validation, benchmarks, deploy, browser checks, M7 (m7_gen_data / m7_train / m7_eval / m7_fno_aug)
 tests/          pytest (API, front end, contrast, solver/data) and tests/js (Node unit tests)

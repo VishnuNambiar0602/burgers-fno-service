@@ -49,3 +49,4 @@ Never cut: baseline, held-out evaluation, physics checks, live inference check, 
 - 2026-11-12 08:16 IST: M7 evaluated: mixed result, criterion not met, not deployed (README 11b). M6 finalisation (README, full tests, commit, push) in progress.
 - 2026-11-12 08:19 IST: M6 DONE (local verification only): 62/62 tests pass, live_check PASS against the local server (max abs diff 7.32e-07), README final, main pushed (2e9a219). Public URL (M4) still not met.
 - 2026-11-12 10:31 IST: M4 DONE (late): live on Render, https://burgers-fno-service.onrender.com. live_check PASS (max abs diff 7.94e-07, same weights hash), MCP + agent.json + origin check work publicly. /predict about 2.2 s, with solver about 9.2 s on the free tier.
+- 2026-11-12 10:50 IST: hardening in progress: rate limit + concurrency cap + MCP switch + commit hash in /health. Tag known-good-live = 4df4bcf (local).
